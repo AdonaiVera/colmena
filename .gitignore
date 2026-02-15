@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+release/
+
+# electron-builder
+*.dmg
+*.exe
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*.blockmap
+*.yml.bak
+
+# TypeScript
+*.tsbuildinfo
+
+# Native modules (node-pty rebuild artifacts)
+build/Release/
+prebuilds/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Plans
+colmena-project-plan.md

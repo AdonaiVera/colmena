@@ -1,0 +1,25 @@
+appId: com.colmena.app
+productName: Colmena
+directories:
+  buildResources: resources
+  output: release
+files:
+  - dist/**/*
+  - "!node_modules/**/*"
+mac:
+  target:
+    - dmg
+    - zip
+  artifactName: ${name}-${version}-${arch}.${ext}
+  category: public.app-category.developer-tools
+win:
+  target:
+    - nsis
+  artifactName: ${name}-${version}-setup.${ext}
+linux:
+  target:
+    - AppImage
+    - deb
+  artifactName: ${name}-${version}-${arch}.${ext}
+  category: Development
+npmRebuild: true
