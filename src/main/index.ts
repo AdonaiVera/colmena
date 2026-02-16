@@ -6,6 +6,13 @@ import { destroyAllSessions } from "./pty-manager";
 import { cleanupOrphanedWorktrees } from "./git-manager";
 import { loadTabs } from "./store";
 
+app.setName("Colmena");
+
+const iconPath = join(__dirname, "../../resources/icon.png");
+if (process.platform === "darwin" && app.dock) {
+  app.dock.setIcon(iconPath);
+}
+
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): void {
@@ -17,6 +24,7 @@ function createWindow(): void {
     show: false,
     titleBarStyle: "hiddenInset",
     backgroundColor: "#0a0a0a",
+    icon: join(__dirname, "../../resources/icon.png"),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       contextIsolation: true,
