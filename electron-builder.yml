@@ -4,8 +4,14 @@ directories:
   buildResources: resources
   output: release
 files:
-  - dist/**/*
+  - out/**/*
   - "!node_modules/**/*"
+  - node_modules/node-pty/**/*
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
+asarUnpack:
+  - node_modules/node-pty/**/*
 mac:
   target:
     - dmg

@@ -43,7 +43,10 @@ export function App() {
     async (config: { workingDir: string; mode: ClaudeMode; model: ClaudeModel }) => {
       setSessionLoading(true);
       const sessionId = nanoid();
-      const gitResult = await window.colmena.git.setup(sessionId, config.workingDir);
+      const gitResult =
+        config.mode === "new"
+          ? await window.colmena.git.setup(sessionId, config.workingDir)
+          : undefined;
       createSession(sessionId, config.workingDir, config.mode, config.model, gitResult);
       setShowNewDialog(false);
       setSessionLoading(false);

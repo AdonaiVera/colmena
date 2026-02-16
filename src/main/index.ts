@@ -8,7 +8,9 @@ import { loadTabs } from "./store";
 
 app.setName("Colmena");
 
-const iconPath = join(__dirname, "../../resources/icon.png");
+const iconPath = app.isPackaged
+  ? join(process.resourcesPath, "icon.png")
+  : join(__dirname, "../../resources/icon.png");
 if (process.platform === "darwin" && app.dock) {
   app.dock.setIcon(iconPath);
 }
@@ -24,7 +26,7 @@ function createWindow(): void {
     show: false,
     titleBarStyle: "hiddenInset",
     backgroundColor: "#0a0a0a",
-    icon: join(__dirname, "../../resources/icon.png"),
+    icon: iconPath,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       contextIsolation: true,
