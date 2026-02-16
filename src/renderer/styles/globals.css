@@ -92,3 +92,17 @@ body,
 .terminal-container .xterm {
   padding: 8px;
 }
+
+.diff-file-row .diff-revert-btn {
+  opacity: 0;
+  transition: opacity 150ms ease, color 150ms ease;
+}
+
+.diff-file-row:hover .diff-revert-btn {
+  opacity: 0.7;
+}
+
+.diff-file-row .diff-revert-btn:hover {
+  opacity: 1;
+  color: var(--error);
+}

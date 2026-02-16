@@ -1,11 +1,14 @@
 import { useCallback, useState } from "react";
+import { nanoid } from "nanoid";
 
 import { useSessionStore } from "./hooks/useSessionStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useGitBranch } from "./hooks/useGitBranch";
 import { Sidebar } from "./components/Sidebar";
 import { Terminal } from "./components/Terminal";
 import { NewSessionDialog } from "./components/NewSessionDialog";
 import { WelcomeScreen } from "./components/WelcomeScreen";
+import { DiffPanel } from "./components/DiffPanel";
 import { getBaseName } from "./lib/utils";
 import type { ClaudeMode, ClaudeModel } from "../shared/types";
 
@@ -23,15 +26,27 @@ export function App() {
 
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [diffPanelOpen, setDiffPanelOpen] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(false);
+
+  useGitBranch({ sessions, updateSession });
 
   const toggleCheatSheet = useCallback(() => {
     setShowCheatSheet((prev) => !prev);
   }, []);
 
+  const toggleDiffPanel = useCallback(() => {
+    setDiffPanelOpen((prev) => !prev);
+  }, []);
+
   const handleConfirmNewSession = useCallback(
-    (config: { workingDir: string; mode: ClaudeMode; model: ClaudeModel }) => {
-      createSession(config.workingDir, config.mode, config.model);
+    async (config: { workingDir: string; mode: ClaudeMode; model: ClaudeModel }) => {
+      setSessionLoading(true);
+      const sessionId = nanoid();
+      const gitResult = await window.colmena.git.setup(sessionId, config.workingDir);
+      createSession(sessionId, config.workingDir, config.mode, config.model, gitResult);
       setShowNewDialog(false);
+      setSessionLoading(false);
     },
     [createSession]
   );
@@ -58,6 +73,7 @@ export function App() {
     onNewTab: () => setShowNewDialog(true),
     onCloseTab: handleCloseSession,
     onToggleCheatSheet: toggleCheatSheet,
+    onToggleDiffPanel: toggleDiffPanel,
   });
 
   const active = sessions.find((s) => s.id === activeSessionId);
@@ -111,6 +127,30 @@ export function App() {
               {getBaseName(active.workingDir)}
             </span>
           )}
+          {active?.gitBranch && (
+            <span style={{ color: "var(--accent)", fontSize: 11 }}>
+              {active.gitBranch}
+            </span>
+          )}
+          <div style={{ flex: 1 }} />
+          {active?.worktreePath && active?.baseBranch && (
+            <button
+              className="titlebar-no-drag"
+              onClick={toggleDiffPanel}
+              style={{
+                background: diffPanelOpen ? "var(--surface-hover)" : "none",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                color: diffPanelOpen ? "var(--accent)" : "var(--text-muted)",
+                cursor: "pointer",
+                padding: "4px 10px",
+                fontSize: 11,
+                transition: "var(--transition)",
+              }}
+            >
+              Diff
+            </button>
+          )}
         </div>
 
         <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
@@ -131,11 +171,22 @@ export function App() {
           {restored && sessions.length === 0 && (
             <WelcomeScreen onNewTab={() => setShowNewDialog(true)} />
           )}
+
+          {active?.worktreePath && active?.baseBranch && (
+            <DiffPanel
+              open={diffPanelOpen}
+              onClose={() => setDiffPanelOpen(false)}
+              worktreePath={active.worktreePath}
+              baseBranch={active.baseBranch}
+              sessionName={active.name}
+            />
+          )}
         </div>
       </div>
 
       <NewSessionDialog
         open={showNewDialog}
+        loading={sessionLoading}
         onConfirm={handleConfirmNewSession}
         onCancel={() => setShowNewDialog(false)}
       />

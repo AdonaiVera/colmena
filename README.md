@@ -16,6 +16,9 @@
 
 ---
 
+> ⚠️
+> **Experimental**: under active development. Expect breaking changes and rough edges.
+
 Run multiple Claude Code agents side by side. Each tab is an independent session with its own PTY, so you can work on different projects or tasks without switching windows.
 
 ## Features

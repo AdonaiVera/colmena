@@ -1,4 +1,5 @@
 import { ipcMain, dialog, type BrowserWindow } from "electron";
+
 import {
   createSession,
   writeToSession,
@@ -6,6 +7,12 @@ import {
   destroySession,
 } from "./pty-manager";
 import { saveTabs, loadTabs } from "./store";
+import {
+  setupWorktree,
+  cleanupWorktree,
+  getCurrentBranch,
+} from "./git-manager";
+import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
@@ -44,4 +51,62 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     if (result.canceled || result.filePaths.length === 0) return null;
     return result.filePaths[0];
   });
+
+  ipcMain.handle(
+    "git:setup",
+    async (_event, sessionId: string, workingDir: string) => {
+      return setupWorktree(sessionId, workingDir);
+    }
+  );
+
+  ipcMain.handle(
+    "git:cleanup",
+    async (
+      _event,
+      _sessionId: string,
+      repoRoot: string,
+      worktreePath: string,
+      branchName: string
+    ) => {
+      await cleanupWorktree(repoRoot, worktreePath, branchName);
+    }
+  );
+
+  ipcMain.handle("git:getBranch", async (_event, workingDir: string) => {
+    return getCurrentBranch(workingDir);
+  });
+
+  ipcMain.handle(
+    "git:getDiff",
+    async (_event, worktreePath: string, baseBranch: string) => {
+      return getDiffFiles(worktreePath, baseBranch);
+    }
+  );
+
+  ipcMain.handle(
+    "git:revertFile",
+    async (_event, worktreePath: string, filePath: string, baseBranch: string) => {
+      return revertFile(worktreePath, filePath, baseBranch);
+    }
+  );
+
+  ipcMain.handle(
+    "git:revertHunk",
+    async (
+      _event,
+      worktreePath: string,
+      filePath: string,
+      hunkIndex: number,
+      baseBranch: string
+    ) => {
+      return revertHunk(worktreePath, filePath, hunkIndex, baseBranch);
+    }
+  );
+
+  ipcMain.handle(
+    "git:writeFile",
+    async (_event, worktreePath: string, filePath: string, content: string) => {
+      return writeFileContent(worktreePath, filePath, content);
+    }
+  );
 }

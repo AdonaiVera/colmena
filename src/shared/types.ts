@@ -45,6 +45,9 @@ export interface Session {
   status: SessionStatus;
   activityState: ActivityState;
   gitBranch?: string;
+  worktreePath?: string;
+  baseBranch?: string;
+  repoRoot?: string;
   createdAt: number;
 }
 
@@ -55,6 +58,9 @@ export interface PersistedTab {
   command: string;
   mode: ClaudeMode;
   model: ClaudeModel;
+  worktreePath?: string;
+  baseBranch?: string;
+  repoRoot?: string;
 }
 
 export interface PtyCreateOptions {
@@ -65,6 +71,33 @@ export interface PtyCreateOptions {
   command?: string;
 }
 
+export interface GitSetupResult {
+  success: boolean;
+  worktreePath: string;
+  branchName: string;
+  baseBranch: string;
+  repoRoot: string;
+  error?: string;
+}
+
+export interface GitDiffHunk {
+  oldStart: number;
+  oldLines: number;
+  newStart: number;
+  newLines: number;
+  header: string;
+  content: string;
+}
+
+export interface GitDiffFile {
+  filePath: string;
+  status: "added" | "modified" | "deleted" | "renamed";
+  oldPath?: string;
+  hunks: GitDiffHunk[];
+  originalContent: string;
+  modifiedContent: string;
+}
+
 export interface IpcChannels {
   "pty:create": (opts: PtyCreateOptions) => void;
   "pty:write": (sessionId: string, data: string) => void;
@@ -72,4 +105,11 @@ export interface IpcChannels {
   "pty:destroy": (sessionId: string) => void;
   "pty:data": (sessionId: string, data: string) => void;
   "pty:exit": (sessionId: string, exitCode: number) => void;
+  "git:setup": (sessionId: string, workingDir: string) => Promise<GitSetupResult>;
+  "git:cleanup": (sessionId: string, repoRoot: string, worktreePath: string, branchName: string) => Promise<void>;
+  "git:getBranch": (workingDir: string) => Promise<string | null>;
+  "git:getDiff": (worktreePath: string, baseBranch: string) => Promise<GitDiffFile[]>;
+  "git:revertFile": (worktreePath: string, filePath: string, baseBranch: string) => Promise<boolean>;
+  "git:revertHunk": (worktreePath: string, filePath: string, hunkIndex: number, baseBranch: string) => Promise<boolean>;
+  "git:writeFile": (worktreePath: string, filePath: string, content: string) => Promise<boolean>;
 }

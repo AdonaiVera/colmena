@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { nanoid } from "nanoid";
 
 import { buildClaudeCommand } from "../../shared/types";
 import { getBaseName } from "../lib/utils";
@@ -8,6 +7,7 @@ import type {
   ClaudeMode,
   ClaudeModel,
   PersistedTab,
+  GitSetupResult,
 } from "../../shared/types";
 
 interface SessionStoreState {
@@ -30,6 +30,9 @@ function toPersistedTabs(sessions: Session[]): PersistedTab[] {
     command: s.command,
     mode: s.mode,
     model: s.model,
+    worktreePath: s.worktreePath,
+    baseBranch: s.baseBranch,
+    repoRoot: s.repoRoot,
   }));
 }
 
@@ -61,6 +64,9 @@ export function useSessionStore() {
         model: tab.model || "default",
         status: "running" as const,
         activityState: "idling" as const,
+        worktreePath: tab.worktreePath,
+        baseBranch: tab.baseBranch,
+        repoRoot: tab.repoRoot,
         createdAt: Date.now(),
       }));
       setState({
@@ -73,20 +79,28 @@ export function useSessionStore() {
 
   const createSession = useCallback(
     (
+      sessionId: string,
       workingDir: string,
       mode: ClaudeMode,
-      model: ClaudeModel
+      model: ClaudeModel,
+      gitResult?: GitSetupResult
     ): Session => {
       const command = buildClaudeCommand(mode, model);
+      const effectiveDir = gitResult?.success ? gitResult.worktreePath : workingDir;
+
       const session: Session = {
-        id: nanoid(),
+        id: sessionId,
         name: "",
-        workingDir,
+        workingDir: effectiveDir,
         command,
         mode,
         model,
         status: "running",
         activityState: "idling",
+        gitBranch: gitResult?.success ? gitResult.branchName : undefined,
+        worktreePath: gitResult?.success ? gitResult.worktreePath : undefined,
+        baseBranch: gitResult?.success ? gitResult.baseBranch : undefined,
+        repoRoot: gitResult?.success ? gitResult.repoRoot : undefined,
         createdAt: Date.now(),
       };
 
@@ -108,6 +122,16 @@ export function useSessionStore() {
 
   const removeSession = useCallback((sessionId: string) => {
     setState((prev) => {
+      const session = prev.sessions.find((s) => s.id === sessionId);
+      if (session?.worktreePath && session?.repoRoot && session?.gitBranch) {
+        window.colmena.git.cleanup(
+          sessionId,
+          session.repoRoot,
+          session.worktreePath,
+          session.gitBranch
+        );
+      }
+
       const sessions = prev.sessions.filter((s) => s.id !== sessionId);
       let activeSessionId = prev.activeSessionId;
       if (activeSessionId === sessionId) {
