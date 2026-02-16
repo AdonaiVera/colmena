@@ -1,7 +1,10 @@
 import { app, BrowserWindow } from "electron";
 import { join } from "path";
+
 import { registerIpcHandlers } from "./ipc";
 import { destroyAllSessions } from "./pty-manager";
+import { cleanupOrphanedWorktrees } from "./git-manager";
+import { loadTabs } from "./store";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -38,7 +41,9 @@ function createWindow(): void {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  const tabs = loadTabs();
+  await cleanupOrphanedWorktrees(tabs).catch(() => {});
   createWindow();
 
   app.on("activate", () => {

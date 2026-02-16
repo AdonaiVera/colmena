@@ -9,6 +9,7 @@ interface UseKeyboardShortcutsOptions {
   onNewTab: () => void;
   onCloseTab: (id: string) => void;
   onToggleCheatSheet: () => void;
+  onToggleDiffPanel: () => void;
 }
 
 export function useKeyboardShortcuts({
@@ -18,6 +19,7 @@ export function useKeyboardShortcuts({
   onNewTab,
   onCloseTab,
   onToggleCheatSheet,
+  onToggleDiffPanel,
 }: UseKeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,6 +64,12 @@ export function useKeyboardShortcuts({
       if (e.key === "/" || e.key === "?") {
         e.preventDefault();
         onToggleCheatSheet();
+        return;
+      }
+
+      if (e.key === "d" && !e.shiftKey) {
+        e.preventDefault();
+        onToggleDiffPanel();
       }
     };
 
@@ -74,5 +82,6 @@ export function useKeyboardShortcuts({
     onNewTab,
     onCloseTab,
     onToggleCheatSheet,
+    onToggleDiffPanel,
   ]);
 }

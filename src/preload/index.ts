@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { PtyCreateOptions, PersistedTab } from "../shared/types";
+
+import type {
+  PtyCreateOptions,
+  PersistedTab,
+  GitSetupResult,
+  GitDiffFile,
+} from "../shared/types";
 
 const api = {
   pty: {
@@ -37,6 +43,52 @@ const api = {
   dialog: {
     openFolder: (): Promise<string | null> =>
       ipcRenderer.invoke("dialog:openFolder"),
+  },
+  git: {
+    setup: (
+      sessionId: string,
+      workingDir: string
+    ): Promise<GitSetupResult> =>
+      ipcRenderer.invoke("git:setup", sessionId, workingDir),
+    cleanup: (
+      sessionId: string,
+      repoRoot: string,
+      worktreePath: string,
+      branchName: string
+    ): Promise<void> =>
+      ipcRenderer.invoke("git:cleanup", sessionId, repoRoot, worktreePath, branchName),
+    getBranch: (workingDir: string): Promise<string | null> =>
+      ipcRenderer.invoke("git:getBranch", workingDir),
+    getDiff: (
+      worktreePath: string,
+      baseBranch: string
+    ): Promise<GitDiffFile[]> =>
+      ipcRenderer.invoke("git:getDiff", worktreePath, baseBranch),
+    revertFile: (
+      worktreePath: string,
+      filePath: string,
+      baseBranch: string
+    ): Promise<boolean> =>
+      ipcRenderer.invoke("git:revertFile", worktreePath, filePath, baseBranch),
+    revertHunk: (
+      worktreePath: string,
+      filePath: string,
+      hunkIndex: number,
+      baseBranch: string
+    ): Promise<boolean> =>
+      ipcRenderer.invoke(
+        "git:revertHunk",
+        worktreePath,
+        filePath,
+        hunkIndex,
+        baseBranch
+      ),
+    writeFile: (
+      worktreePath: string,
+      filePath: string,
+      content: string
+    ): Promise<boolean> =>
+      ipcRenderer.invoke("git:writeFile", worktreePath, filePath, content),
   },
 };
 

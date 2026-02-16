@@ -23,6 +23,7 @@ interface NewTabConfig {
 
 interface NewSessionDialogProps {
   open: boolean;
+  loading?: boolean;
   onConfirm: (config: NewTabConfig) => void;
   onCancel: () => void;
 }
@@ -60,6 +61,7 @@ const itemStyle: React.CSSProperties = {
 
 export function NewSessionDialog({
   open,
+  loading,
   onConfirm,
   onCancel,
 }: NewSessionDialogProps) {
@@ -161,6 +163,7 @@ export function NewSessionDialog({
             variant="outline"
             size="sm"
             onClick={onCancel}
+            disabled={loading}
             style={{
               borderColor: "var(--border)",
               color: "var(--text-secondary)",
@@ -175,6 +178,7 @@ export function NewSessionDialog({
           <Button
             size="sm"
             onClick={handleSubmit}
+            disabled={loading}
             style={{
               backgroundColor: "var(--accent)",
               color: "var(--bg)",
@@ -183,9 +187,10 @@ export function NewSessionDialog({
               height: 36,
               padding: "0 20px",
               borderRadius: 8,
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            Open
+            {loading ? "Setting up..." : "Open"}
           </Button>
         </DialogFooter>
       </DialogContent>
