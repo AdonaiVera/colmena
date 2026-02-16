@@ -1,6 +1,7 @@
 import * as pty from "node-pty";
 import { BrowserWindow } from "electron";
 import os from "os";
+import { execFileSync } from "child_process";
 
 import type { PtyCreateOptions } from "../shared/types";
 
@@ -10,6 +11,28 @@ interface PtySession {
 }
 
 const sessions = new Map<string, PtySession>();
+
+let cachedShellPath: string | null = null;
+
+function getLoginShellPath(): string {
+  if (cachedShellPath) return cachedShellPath;
+  if (process.platform === "win32") return process.env.PATH || "";
+
+  const shell = process.env.SHELL || "/bin/zsh";
+  try {
+    const result = execFileSync(shell, ["-ilc", "echo __PATH__=$PATH"], {
+      encoding: "utf-8",
+      timeout: 5000,
+      env: { ...process.env },
+    });
+    const match = result.match(/__PATH__=(.+)/);
+    if (match) {
+      cachedShellPath = match[1].trim();
+      return cachedShellPath;
+    }
+  } catch {}
+  return process.env.PATH || "";
+}
 
 function getDefaultShell(): string {
   if (process.platform === "win32") {
@@ -26,6 +49,7 @@ export function createSession(window: BrowserWindow, opts: PtyCreateOptions): vo
 
   const env = {
     ...process.env,
+    PATH: getLoginShellPath(),
     COLMENA_SESSION_ID: opts.sessionId,
   };
 
