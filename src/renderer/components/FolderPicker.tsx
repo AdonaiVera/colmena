@@ -4,20 +4,14 @@ interface FolderPickerProps {
   onBrowse: () => void;
 }
 
-export function FolderPicker({
-  workingDir,
-  folderName,
-  onBrowse,
-}: FolderPickerProps) {
+export function FolderPicker({ workingDir, folderName, onBrowse }: FolderPickerProps) {
   return (
     <div style={{ padding: "20px 28px" }}>
       <div
         onClick={onBrowse}
         style={{
           backgroundColor: "var(--bg)",
-          border: workingDir
-            ? "1px solid var(--accent)"
-            : "1px dashed #3f3f46",
+          border: workingDir ? "1px solid var(--accent)" : "1px dashed #3f3f46",
           borderRadius: 10,
           padding: "16px 18px",
           cursor: "pointer",
@@ -32,9 +26,7 @@ export function FolderPicker({
             width: 36,
             height: 36,
             borderRadius: 8,
-            backgroundColor: workingDir
-              ? "rgba(245, 158, 11, 0.1)"
-              : "var(--surface-hover)",
+            backgroundColor: workingDir ? "rgba(245, 158, 11, 0.1)" : "var(--surface-hover)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

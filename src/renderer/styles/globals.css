@@ -95,7 +95,9 @@ body,
 
 .diff-file-row .diff-revert-btn {
   opacity: 0;
-  transition: opacity 150ms ease, color 150ms ease;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease;
 }
 
 .diff-file-row:hover .diff-revert-btn {

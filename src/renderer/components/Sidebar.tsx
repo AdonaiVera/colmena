@@ -49,11 +49,7 @@ export function Sidebar({
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <ColmenaLogo size={22} />
-          <span
-            style={{ fontWeight: 600, fontSize: 14, color: "var(--accent)" }}
-          >
-            Colmena
-          </span>
+          <span style={{ fontWeight: 600, fontSize: 14, color: "var(--accent)" }}>Colmena</span>
         </div>
         <button
           className="titlebar-no-drag"
@@ -68,12 +64,8 @@ export function Sidebar({
             fontSize: 12,
             transition: "var(--transition)",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.borderColor = "var(--accent)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.borderColor = "var(--border)")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
         >
           + New
         </button>
@@ -131,12 +123,8 @@ export function Sidebar({
             fontSize: 12,
             transition: "var(--transition)",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.color = "var(--text)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.color = "var(--text-muted)")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
         >
           <span style={{ fontSize: 14 }}>?</span>
           <span>Shortcuts</span>

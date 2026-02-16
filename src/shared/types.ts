@@ -24,10 +24,7 @@ export const CLAUDE_MODELS = [
   { value: "haiku" as const, label: "Haiku" },
 ];
 
-export function buildClaudeCommand(
-  mode: ClaudeMode,
-  model: ClaudeModel
-): string {
+export function buildClaudeCommand(mode: ClaudeMode, model: ClaudeModel): string {
   const parts = ["claude"];
   if (mode === "continue") parts.push("--continue");
   if (mode === "resume") parts.push("--resume");
@@ -106,10 +103,24 @@ export interface IpcChannels {
   "pty:data": (sessionId: string, data: string) => void;
   "pty:exit": (sessionId: string, exitCode: number) => void;
   "git:setup": (sessionId: string, workingDir: string) => Promise<GitSetupResult>;
-  "git:cleanup": (sessionId: string, repoRoot: string, worktreePath: string, branchName: string) => Promise<void>;
+  "git:cleanup": (
+    sessionId: string,
+    repoRoot: string,
+    worktreePath: string,
+    branchName: string,
+  ) => Promise<void>;
   "git:getBranch": (workingDir: string) => Promise<string | null>;
   "git:getDiff": (worktreePath: string, baseBranch: string) => Promise<GitDiffFile[]>;
-  "git:revertFile": (worktreePath: string, filePath: string, baseBranch: string) => Promise<boolean>;
-  "git:revertHunk": (worktreePath: string, filePath: string, hunkIndex: number, baseBranch: string) => Promise<boolean>;
+  "git:revertFile": (
+    worktreePath: string,
+    filePath: string,
+    baseBranch: string,
+  ) => Promise<boolean>;
+  "git:revertHunk": (
+    worktreePath: string,
+    filePath: string,
+    hunkIndex: number,
+    baseBranch: string,
+  ) => Promise<boolean>;
   "git:writeFile": (worktreePath: string, filePath: string, content: string) => Promise<boolean>;
 }

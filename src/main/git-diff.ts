@@ -8,10 +8,7 @@ import type { GitDiffFile, GitDiffHunk } from "../shared/types";
 const execFileAsync = promisify(execFile);
 const GIT_TIMEOUT = 30_000;
 
-async function git(
-  args: string[],
-  cwd: string
-): Promise<{ stdout: string; stderr: string }> {
+async function git(args: string[], cwd: string): Promise<{ stdout: string; stderr: string }> {
   return execFileAsync("git", args, {
     timeout: GIT_TIMEOUT,
     cwd,
@@ -30,7 +27,14 @@ export function parseDiffHunks(diffText: string): GitDiffHunk[] {
   const hunks: GitDiffHunk[] = [];
   const hunkRegex = /^@@\s+-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s+@@(.*)$/gm;
   let match: RegExpExecArray | null;
-  const matches: { index: number; header: string; oldStart: number; oldLines: number; newStart: number; newLines: number }[] = [];
+  const matches: {
+    index: number;
+    header: string;
+    oldStart: number;
+    oldLines: number;
+    newStart: number;
+    newLines: number;
+  }[] = [];
 
   while ((match = hunkRegex.exec(diffText)) !== null) {
     matches.push({
@@ -62,11 +66,7 @@ export function parseDiffHunks(diffText: string): GitDiffHunk[] {
   return hunks;
 }
 
-async function getFileContent(
-  cwd: string,
-  ref: string,
-  filePath: string
-): Promise<string> {
+async function getFileContent(cwd: string, ref: string, filePath: string): Promise<string> {
   try {
     const { stdout } = await git(["show", `${ref}:${filePath}`], cwd);
     return stdout;
@@ -77,13 +77,13 @@ async function getFileContent(
 
 export async function getDiffFiles(
   worktreePath: string,
-  baseBranch: string
+  baseBranch: string,
 ): Promise<GitDiffFile[]> {
   await git(["add", "-A"], worktreePath);
 
   const { stdout: statusOut } = await git(
     ["diff", "--name-status", "--no-renames", baseBranch],
-    worktreePath
+    worktreePath,
   );
 
   if (!statusOut.trim()) return [];
@@ -99,10 +99,7 @@ export async function getDiffFiles(
 
     let diffText = "";
     try {
-      const { stdout } = await git(
-        ["diff", baseBranch, "--", filePath],
-        worktreePath
-      );
+      const { stdout } = await git(["diff", baseBranch, "--", filePath], worktreePath);
       diffText = stdout;
     } catch {}
 
@@ -111,10 +108,7 @@ export async function getDiffFiles(
     let modifiedContent = "";
     if (status !== "deleted") {
       try {
-        modifiedContent = await fs.readFile(
-          path.join(worktreePath, filePath),
-          "utf-8"
-        );
+        modifiedContent = await fs.readFile(path.join(worktreePath, filePath), "utf-8");
       } catch {}
     }
 
@@ -127,7 +121,7 @@ export async function getDiffFiles(
 export async function writeFileContent(
   worktreePath: string,
   filePath: string,
-  content: string
+  content: string,
 ): Promise<boolean> {
   try {
     await fs.writeFile(path.join(worktreePath, filePath), content, "utf-8");
@@ -140,7 +134,7 @@ export async function writeFileContent(
 export async function revertFile(
   worktreePath: string,
   filePath: string,
-  baseBranch: string
+  baseBranch: string,
 ): Promise<boolean> {
   try {
     await git(["checkout", baseBranch, "--", filePath], worktreePath);
@@ -154,13 +148,10 @@ export async function revertHunk(
   worktreePath: string,
   filePath: string,
   hunkIndex: number,
-  baseBranch: string
+  baseBranch: string,
 ): Promise<boolean> {
   try {
-    const { stdout: diffOut } = await git(
-      ["diff", baseBranch, "--", filePath],
-      worktreePath
-    );
+    const { stdout: diffOut } = await git(["diff", baseBranch, "--", filePath], worktreePath);
 
     const hunks = parseDiffHunks(diffOut);
     if (hunkIndex < 0 || hunkIndex >= hunks.length) return false;
@@ -171,11 +162,9 @@ export async function revertHunk(
     const patch = `${diffHeader}${hunk.header}\n${hunk.content}\n`;
 
     return new Promise<boolean>((resolve) => {
-      const child = spawn(
-        "git",
-        ["apply", "--reverse", "--recount", "--allow-empty"],
-        { cwd: worktreePath }
-      );
+      const child = spawn("git", ["apply", "--reverse", "--recount", "--allow-empty"], {
+        cwd: worktreePath,
+      });
       child.stdin.write(patch);
       child.stdin.end();
       child.on("close", (code) => resolve(code === 0));

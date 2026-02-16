@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogFooter } from "./ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { FolderPicker } from "./FolderPicker";
@@ -59,12 +53,7 @@ const itemStyle: React.CSSProperties = {
   fontSize: 13,
 };
 
-export function NewSessionDialog({
-  open,
-  loading,
-  onConfirm,
-  onCancel,
-}: NewSessionDialogProps) {
+export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSessionDialogProps) {
   const [mode, setMode] = useState<ClaudeMode>("new");
   const [model, setModel] = useState<ClaudeModel>("default");
   const [workingDir, setWorkingDir] = useState("");
@@ -105,16 +94,10 @@ export function NewSessionDialog({
           <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>
             New Tab
           </div>
-          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            Open a Claude Code session
-          </div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>Open a Claude Code session</div>
         </div>
 
-        <FolderPicker
-          workingDir={workingDir}
-          folderName={folderName}
-          onBrowse={handleBrowse}
-        />
+        <FolderPicker workingDir={workingDir} folderName={folderName} onBrowse={handleBrowse} />
 
         <div style={{ padding: "0 28px 20px", display: "flex", gap: 16 }}>
           <div style={{ flex: 1 }}>
@@ -125,15 +108,8 @@ export function NewSessionDialog({
               </SelectTrigger>
               <SelectContent style={{ ...dropdownStyle, minWidth: 200 }}>
                 {CLAUDE_MODES.map((m) => (
-                  <SelectItem
-                    key={m.value}
-                    value={m.value}
-                    description={m.desc}
-                    style={itemStyle}
-                  >
-                    <span style={{ color: "var(--text)", fontSize: 13 }}>
-                      {m.label}
-                    </span>
+                  <SelectItem key={m.value} value={m.value} description={m.desc} style={itemStyle}>
+                    <span style={{ color: "var(--text)", fontSize: 13 }}>{m.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -18,10 +18,7 @@ function getDefaultShell(): string {
   return process.env.SHELL || "/bin/zsh";
 }
 
-export function createSession(
-  window: BrowserWindow,
-  opts: PtyCreateOptions
-): void {
+export function createSession(window: BrowserWindow, opts: PtyCreateOptions): void {
   if (sessions.has(opts.sessionId)) return;
 
   const shell = getDefaultShell();
@@ -77,11 +74,7 @@ export function writeToSession(sessionId: string, data: string): void {
   }
 }
 
-export function resizeSession(
-  sessionId: string,
-  cols: number,
-  rows: number
-): void {
+export function resizeSession(sessionId: string, cols: number, rows: number): void {
   const session = sessions.get(sessionId);
   if (session) {
     session.process.resize(cols, rows);

@@ -59,20 +59,15 @@ export function DiffPanel({
         }
       }
     },
-    [worktreePath, baseBranch]
+    [worktreePath, baseBranch],
   );
 
   const handleRevertHunk = useCallback(
     async (filePath: string, hunkIndex: number) => {
-      const ok = await window.colmena.git.revertHunk(
-        worktreePath,
-        filePath,
-        hunkIndex,
-        baseBranch
-      );
+      const ok = await window.colmena.git.revertHunk(worktreePath, filePath, hunkIndex, baseBranch);
       if (ok) fetchDiff();
     },
-    [worktreePath, baseBranch, fetchDiff]
+    [worktreePath, baseBranch, fetchDiff],
   );
 
   if (!open) return null;
@@ -101,9 +96,7 @@ export function DiffPanel({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
-            Changes
-          </span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>Changes</span>
           <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
             {sessionName} vs {baseBranch}
           </span>
@@ -144,11 +137,7 @@ export function DiffPanel({
         </div>
       </div>
 
-      {error && (
-        <div style={{ padding: "12px", color: "var(--error)", fontSize: 12 }}>
-          {error}
-        </div>
-      )}
+      {error && <div style={{ padding: "12px", color: "var(--error)", fontSize: 12 }}>{error}</div>}
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <DiffFileList

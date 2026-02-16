@@ -35,7 +35,7 @@ export function SearchBar({ searchAddon, onClose }: SearchBarProps) {
         }
       }
     },
-    [query, searchAddon, onClose]
+    [query, searchAddon, onClose],
   );
 
   return (

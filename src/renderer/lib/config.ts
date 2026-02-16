@@ -1,5 +1,4 @@
-export const TERMINAL_FONT_FAMILY =
-  '"JetBrains Mono", "Cascadia Code", "Fira Code", monospace';
+export const TERMINAL_FONT_FAMILY = '"JetBrains Mono", "Cascadia Code", "Fira Code", monospace';
 export const TERMINAL_FONT_SIZE = 13;
 export const TERMINAL_LINE_HEIGHT = 1.4;
 

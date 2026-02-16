@@ -34,18 +34,12 @@ export function WelcomeScreen({ onNewTab }: WelcomeScreenProps) {
           fontWeight: 600,
           transition: "var(--transition)",
         }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.backgroundColor = "var(--accent)")
-        }
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-hover)")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent)")}
       >
         + New Tab
       </button>
-      <div style={{ fontSize: 11, color: "var(--text-muted)", opacity: 0.7 }}>
-        or press Cmd+T
-      </div>
+      <div style={{ fontSize: 11, color: "var(--text-muted)", opacity: 0.7 }}>or press Cmd+T</div>
     </div>
   );
 }
