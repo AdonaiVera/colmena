@@ -13,21 +13,17 @@ export function usePty({ sessionId, onData, onExit }: UsePtyOptions) {
   onExitRef.current = onExit;
 
   useEffect(() => {
-    const removeDataListener = window.colmena.pty.onData(
-      (id: string, data: string) => {
-        if (id === sessionId) {
-          onDataRef.current(data);
-        }
+    const removeDataListener = window.colmena.pty.onData((id: string, data: string) => {
+      if (id === sessionId) {
+        onDataRef.current(data);
       }
-    );
+    });
 
-    const removeExitListener = window.colmena.pty.onExit(
-      (id: string, exitCode: number) => {
-        if (id === sessionId) {
-          onExitRef.current(exitCode);
-        }
+    const removeExitListener = window.colmena.pty.onExit((id: string, exitCode: number) => {
+      if (id === sessionId) {
+        onExitRef.current(exitCode);
       }
-    );
+    });
 
     return () => {
       removeDataListener();
@@ -36,12 +32,7 @@ export function usePty({ sessionId, onData, onExit }: UsePtyOptions) {
   }, [sessionId]);
 
   const spawn = useCallback(
-    (
-      cols: number,
-      rows: number,
-      workingDir?: string,
-      command?: string
-    ) => {
+    (cols: number, rows: number, workingDir?: string, command?: string) => {
       window.colmena.pty.create({
         sessionId,
         cols,
@@ -50,21 +41,21 @@ export function usePty({ sessionId, onData, onExit }: UsePtyOptions) {
         command,
       });
     },
-    [sessionId]
+    [sessionId],
   );
 
   const write = useCallback(
     (data: string) => {
       window.colmena.pty.write(sessionId, data);
     },
-    [sessionId]
+    [sessionId],
   );
 
   const resize = useCallback(
     (cols: number, rows: number) => {
       window.colmena.pty.resize(sessionId, cols, rows);
     },
-    [sessionId]
+    [sessionId],
   );
 
   const destroy = useCallback(() => {

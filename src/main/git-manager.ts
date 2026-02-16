@@ -9,10 +9,7 @@ const execFileAsync = promisify(execFile);
 const GIT_TIMEOUT = 30_000;
 const WORKTREE_DIR = ".colmena-worktrees";
 
-async function git(
-  args: string[],
-  cwd?: string
-): Promise<{ stdout: string; stderr: string }> {
+async function git(args: string[], cwd?: string): Promise<{ stdout: string; stderr: string }> {
   const opts = { timeout: GIT_TIMEOUT, cwd, maxBuffer: 10 * 1024 * 1024 };
   return execFileAsync("git", args, opts);
 }
@@ -80,7 +77,7 @@ async function addToGitExclude(repoRoot: string): Promise<void> {
 
 export async function setupWorktree(
   sessionId: string,
-  workingDir: string
+  workingDir: string,
 ): Promise<GitSetupResult> {
   const empty: GitSetupResult = {
     success: false,
@@ -106,10 +103,7 @@ export async function setupWorktree(
     const worktreePath = path.join(repoRoot, WORKTREE_DIR, branchName.replace("/", "-"));
 
     await fs.mkdir(path.join(repoRoot, WORKTREE_DIR), { recursive: true });
-    await git(
-      ["worktree", "add", "-b", branchName, worktreePath, baseBranch],
-      repoRoot
-    );
+    await git(["worktree", "add", "-b", branchName, worktreePath, baseBranch], repoRoot);
     await addToGitExclude(repoRoot);
 
     return { success: true, worktreePath, branchName, baseBranch, repoRoot };
@@ -122,7 +116,7 @@ export async function setupWorktree(
 export async function cleanupWorktree(
   repoRoot: string,
   worktreePath: string,
-  branchName: string
+  branchName: string,
 ): Promise<void> {
   try {
     await git(["worktree", "remove", worktreePath, "--force"], repoRoot);
@@ -144,16 +138,10 @@ export async function cleanupWorktree(
   } catch {}
 }
 
-export async function cleanupOrphanedWorktrees(
-  tabs: PersistedTab[]
-): Promise<void> {
-  const activeWorktrees = new Set(
-    tabs.filter((t) => t.worktreePath).map((t) => t.worktreePath!)
-  );
+export async function cleanupOrphanedWorktrees(tabs: PersistedTab[]): Promise<void> {
+  const activeWorktrees = new Set(tabs.filter((t) => t.worktreePath).map((t) => t.worktreePath!));
 
-  const repoRoots = new Set(
-    tabs.filter((t) => t.repoRoot).map((t) => t.repoRoot!)
-  );
+  const repoRoots = new Set(tabs.filter((t) => t.repoRoot).map((t) => t.repoRoot!));
 
   for (const repoRoot of repoRoots) {
     const wtDir = path.join(repoRoot, WORKTREE_DIR);

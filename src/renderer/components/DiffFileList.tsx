@@ -64,12 +64,10 @@ export function DiffFileList({
               transition: "var(--transition)",
             }}
             onMouseEnter={(e) => {
-              if (!isSelected)
-                e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+              if (!isSelected) e.currentTarget.style.backgroundColor = "var(--surface-hover)";
             }}
             onMouseLeave={(e) => {
-              if (!isSelected)
-                e.currentTarget.style.backgroundColor = "transparent";
+              if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
             <span

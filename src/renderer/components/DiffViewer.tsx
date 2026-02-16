@@ -16,8 +16,12 @@ type DiffEditorInstance = Parameters<
 >[0];
 
 const barStyle: React.CSSProperties = {
-  display: "flex", alignItems: "center", gap: 6,
-  padding: "6px 12px", borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface)",
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "6px 12px",
+  borderBottom: "1px solid var(--border)",
+  backgroundColor: "var(--surface)",
 };
 
 const btnStyle: React.CSSProperties = {
@@ -43,12 +47,7 @@ const editorOptions = {
   fontFamily: '"JetBrains Mono", "Cascadia Code", monospace',
 };
 
-export function DiffViewer({
-  file,
-  worktreePath,
-  onRevertHunk,
-  onFileSaved,
-}: DiffViewerProps) {
+export function DiffViewer({ file, worktreePath, onRevertHunk, onFileSaved }: DiffViewerProps) {
   const editorRef = useRef<DiffEditorInstance | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -114,7 +113,7 @@ export function DiffViewer({
         modEditor.createDecorationsCollection(decorations);
       }, 300);
     },
-    [file]
+    [file],
   );
 
   const handleSave = useCallback(async () => {
@@ -137,7 +136,16 @@ export function DiffViewer({
 
   if (!file) {
     return (
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: 13 }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--text-muted)",
+          fontSize: 13,
+        }}
+      >
         Select a file to view changes
       </div>
     );

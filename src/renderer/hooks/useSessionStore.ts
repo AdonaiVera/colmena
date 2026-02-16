@@ -83,7 +83,7 @@ export function useSessionStore() {
       workingDir: string,
       mode: ClaudeMode,
       model: ClaudeModel,
-      gitResult?: GitSetupResult
+      gitResult?: GitSetupResult,
     ): Session => {
       const command = buildClaudeCommand(mode, model);
       const effectiveDir = gitResult?.success ? gitResult.worktreePath : workingDir;
@@ -117,7 +117,7 @@ export function useSessionStore() {
 
       return session;
     },
-    []
+    [],
   );
 
   const removeSession = useCallback((sessionId: string) => {
@@ -128,43 +128,32 @@ export function useSessionStore() {
           sessionId,
           session.repoRoot,
           session.worktreePath,
-          session.gitBranch
+          session.gitBranch,
         );
       }
 
       const sessions = prev.sessions.filter((s) => s.id !== sessionId);
       let activeSessionId = prev.activeSessionId;
       if (activeSessionId === sessionId) {
-        activeSessionId =
-          sessions.length > 0 ? sessions[sessions.length - 1].id : null;
+        activeSessionId = sessions.length > 0 ? sessions[sessions.length - 1].id : null;
       }
       return { ...prev, sessions, activeSessionId };
     });
   }, []);
 
-  const renameSession = useCallback(
-    (sessionId: string, name: string) => {
-      setState((prev) => ({
-        ...prev,
-        sessions: prev.sessions.map((s) =>
-          s.id === sessionId ? { ...s, name } : s
-        ),
-      }));
-    },
-    []
-  );
+  const renameSession = useCallback((sessionId: string, name: string) => {
+    setState((prev) => ({
+      ...prev,
+      sessions: prev.sessions.map((s) => (s.id === sessionId ? { ...s, name } : s)),
+    }));
+  }, []);
 
-  const updateSession = useCallback(
-    (sessionId: string, updates: Partial<Session>) => {
-      setState((prev) => ({
-        ...prev,
-        sessions: prev.sessions.map((s) =>
-          s.id === sessionId ? { ...s, ...updates } : s
-        ),
-      }));
-    },
-    []
-  );
+  const updateSession = useCallback((sessionId: string, updates: Partial<Session>) => {
+    setState((prev) => ({
+      ...prev,
+      sessions: prev.sessions.map((s) => (s.id === sessionId ? { ...s, ...updates } : s)),
+    }));
+  }, []);
 
   const setActiveSession = useCallback((sessionId: string) => {
     setState((prev) => ({ ...prev, activeSessionId: sessionId }));

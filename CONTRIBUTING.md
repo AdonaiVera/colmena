@@ -66,6 +66,15 @@ src/
 
 ## Code Style
 
+### Formatting
+
+Code is formatted with [Prettier](https://prettier.io/). Run before committing:
+
+```bash
+npm run format        # auto-fix
+npm run format:check  # CI-friendly check
+```
+
 ### General
 
 - **TypeScript** everywhere. No `any` unless absolutely necessary.
@@ -109,6 +118,7 @@ src/
 ## Making Changes
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout -b feat/your-feature
    ```
@@ -121,8 +131,10 @@ src/
    - Resize the window
    - Switch between tabs
 
-4. **Build** to catch TypeScript errors:
+4. **Format** and **build**:
+
    ```bash
+   npm run format
    npm run build
    ```
 
@@ -134,16 +146,17 @@ src/
 
 Format: `<type>: <description>`
 
-| Type       | Use for                                  |
-|------------|------------------------------------------|
-| `feat`     | New feature                              |
-| `fix`      | Bug fix                                  |
-| `refactor` | Code change with no new feature or fix   |
-| `style`    | Formatting, spacing, no logic change     |
-| `docs`     | Documentation only                       |
-| `chore`    | Build, config, dependencies              |
+| Type       | Use for                                |
+| ---------- | -------------------------------------- |
+| `feat`     | New feature                            |
+| `fix`      | Bug fix                                |
+| `refactor` | Code change with no new feature or fix |
+| `style`    | Formatting, spacing, no logic change   |
+| `docs`     | Documentation only                     |
+| `chore`    | Build, config, dependencies            |
 
 Examples:
+
 ```
 feat: add session restart on process exit
 fix: prevent restart loop on rapid exit

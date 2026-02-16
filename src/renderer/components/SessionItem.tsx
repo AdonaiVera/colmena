@@ -65,9 +65,7 @@ export function SessionItem({
         borderRadius: "var(--radius)",
         cursor: "pointer",
         backgroundColor: isActive ? "var(--surface-hover)" : "transparent",
-        border: isActive
-          ? "1px solid var(--border)"
-          : "1px solid transparent",
+        border: isActive ? "1px solid var(--border)" : "1px solid transparent",
         marginBottom: 2,
         display: "flex",
         alignItems: "center",
@@ -75,12 +73,10 @@ export function SessionItem({
         transition: "var(--transition)",
       }}
       onMouseEnter={(e) => {
-        if (!isActive)
-          e.currentTarget.style.backgroundColor = "var(--surface-hover)";
+        if (!isActive) e.currentTarget.style.backgroundColor = "var(--surface-hover)";
       }}
       onMouseLeave={(e) => {
-        if (!isActive)
-          e.currentTarget.style.backgroundColor = "transparent";
+        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
       <div
@@ -97,8 +93,7 @@ export function SessionItem({
             width: 6,
             height: 6,
             borderRadius: "50%",
-            backgroundColor:
-              STATUS_COLORS[session.activityState] || "var(--text-secondary)",
+            backgroundColor: STATUS_COLORS[session.activityState] || "var(--text-secondary)",
             flexShrink: 0,
           }}
         />

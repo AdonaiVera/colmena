@@ -15,7 +15,9 @@ import {
 } from "../lib/config";
 
 function safeFit(addon: FitAddon | null) {
-  try { addon?.fit(); } catch {}
+  try {
+    addon?.fit();
+  } catch {}
 }
 
 export interface TerminalProps {
@@ -58,9 +60,7 @@ export function Terminal({
       if (rapidExit && hasModeFlag) {
         const fallback = cmd.replace(/\s*--(continue|resume)/g, "").trim();
         commandRef.current = fallback;
-        terminalRef.current?.writeln(
-          "\r\n\x1b[90m[No previous session — starting new]\x1b[0m\r\n"
-        );
+        terminalRef.current?.writeln("\r\n\x1b[90m[No previous session — starting new]\x1b[0m\r\n");
         const term = terminalRef.current;
         if (term && fitAddonRef.current) {
           safeFit(fitAddonRef.current);
@@ -75,7 +75,7 @@ export function Terminal({
       terminalRef.current?.writeln(
         rapidExit
           ? "\r\n\x1b[90m[Process failed to start]\x1b[0m"
-          : "\r\n\x1b[90m[Process exited — press any key to restart]\x1b[0m"
+          : "\r\n\x1b[90m[Process exited — press any key to restart]\x1b[0m",
       );
       onStatusChange?.("exited");
     },
@@ -110,9 +110,7 @@ export function Terminal({
     const fitAddon = new FitAddon();
     const searchAddon = new SearchAddon();
     const unicode11 = new Unicode11Addon();
-    [fitAddon, searchAddon, new WebLinksAddon(), unicode11].forEach((a) =>
-      terminal.loadAddon(a)
-    );
+    [fitAddon, searchAddon, new WebLinksAddon(), unicode11].forEach((a) => terminal.loadAddon(a));
     terminal.unicode.activeVersion = "11";
     terminal.open(containerRef.current);
 

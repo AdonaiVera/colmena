@@ -48,7 +48,7 @@ export function App() {
       setShowNewDialog(false);
       setSessionLoading(false);
     },
-    [createSession]
+    [createSession],
   );
 
   const handleCloseSession = useCallback(
@@ -56,14 +56,14 @@ export function App() {
       window.colmena.pty.destroy(sessionId);
       removeSession(sessionId);
     },
-    [removeSession]
+    [removeSession],
   );
 
   const handleStatusChange = useCallback(
     (sessionId: string, status: "running" | "exited") => {
       updateSession(sessionId, { status });
     },
-    [updateSession]
+    [updateSession],
   );
 
   useKeyboardShortcuts({
@@ -128,9 +128,7 @@ export function App() {
             </span>
           )}
           {active?.gitBranch && (
-            <span style={{ color: "var(--accent)", fontSize: 11 }}>
-              {active.gitBranch}
-            </span>
+            <span style={{ color: "var(--accent)", fontSize: 11 }}>{active.gitBranch}</span>
           )}
           <div style={{ flex: 1 }} />
           {active?.worktreePath && active?.baseBranch && (
@@ -162,9 +160,7 @@ export function App() {
                 workingDir={session.workingDir}
                 command={session.command}
                 isActive={session.id === activeSessionId}
-                onStatusChange={(status) =>
-                  handleStatusChange(session.id, status)
-                }
+                onStatusChange={(status) => handleStatusChange(session.id, status)}
               />
             ))}
 
