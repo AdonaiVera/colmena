@@ -4,11 +4,10 @@ import { nanoid } from "nanoid";
 import { useSessionStore } from "./hooks/useSessionStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useGitBranch } from "./hooks/useGitBranch";
+import { useSplitTerminal } from "./hooks/useSplitTerminal";
 import { Sidebar } from "./components/Sidebar";
-import { Terminal } from "./components/Terminal";
 import { NewSessionDialog } from "./components/NewSessionDialog";
-import { WelcomeScreen } from "./components/WelcomeScreen";
-import { DiffPanel } from "./components/DiffPanel";
+import { TerminalArea } from "./components/TerminalArea";
 import { getBaseName } from "./lib/utils";
 import type { ClaudeMode, ClaudeModel } from "../shared/types";
 
@@ -28,6 +27,7 @@ export function App() {
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [diffPanelOpen, setDiffPanelOpen] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(false);
+  const split = useSplitTerminal();
 
   useGitBranch({ sessions, updateSession });
 
@@ -43,11 +43,14 @@ export function App() {
     async (config: { workingDir: string; mode: ClaudeMode; model: ClaudeModel }) => {
       setSessionLoading(true);
       const sessionId = nanoid();
-      const gitResult =
-        config.mode === "new"
-          ? await window.colmena.git.setup(sessionId, config.workingDir)
-          : undefined;
-      createSession(sessionId, config.workingDir, config.mode, config.model, gitResult);
+      let gitResult;
+      let gitInfo;
+      if (config.mode === "new") {
+        gitResult = await window.colmena.git.setup(sessionId, config.workingDir);
+      } else {
+        gitInfo = await window.colmena.git.getInfo(config.workingDir);
+      }
+      createSession(sessionId, config.workingDir, config.mode, config.model, gitResult, gitInfo);
       setShowNewDialog(false);
       setSessionLoading(false);
     },
@@ -57,6 +60,7 @@ export function App() {
   const handleCloseSession = useCallback(
     (sessionId: string) => {
       window.colmena.pty.destroy(sessionId);
+      window.colmena.pty.destroy(`split-${sessionId}`);
       removeSession(sessionId);
     },
     [removeSession],
@@ -77,9 +81,22 @@ export function App() {
     onCloseTab: handleCloseSession,
     onToggleCheatSheet: toggleCheatSheet,
     onToggleDiffPanel: toggleDiffPanel,
+    onToggleSplitTerminal: split.toggle,
   });
 
   const active = sessions.find((s) => s.id === activeSessionId);
+  const diffPath = active?.worktreePath || (active?.baseBranch ? active?.workingDir : undefined);
+
+  const btnStyle = (on: boolean): React.CSSProperties => ({
+    background: on ? "var(--surface-hover)" : "none",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius)",
+    color: on ? "var(--accent)" : "var(--text-muted)",
+    cursor: "pointer",
+    padding: "4px 10px",
+    fontSize: 11,
+    transition: "var(--transition)",
+  });
 
   return (
     <div
@@ -134,53 +151,42 @@ export function App() {
             <span style={{ color: "var(--accent)", fontSize: 11 }}>{active.gitBranch}</span>
           )}
           <div style={{ flex: 1 }} />
-          {active?.worktreePath && active?.baseBranch && (
+          {active && (
+            <button
+              className="titlebar-no-drag"
+              onClick={split.toggle}
+              style={btnStyle(split.isOpen)}
+            >
+              Terminal
+            </button>
+          )}
+          {diffPath && active?.baseBranch && (
             <button
               className="titlebar-no-drag"
               onClick={toggleDiffPanel}
-              style={{
-                background: diffPanelOpen ? "var(--surface-hover)" : "none",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                color: diffPanelOpen ? "var(--accent)" : "var(--text-muted)",
-                cursor: "pointer",
-                padding: "4px 10px",
-                fontSize: 11,
-                transition: "var(--transition)",
-              }}
+              style={btnStyle(diffPanelOpen)}
             >
               Diff
             </button>
           )}
         </div>
 
-        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-          {restored &&
-            sessions.map((session) => (
-              <Terminal
-                key={session.id}
-                sessionId={session.id}
-                workingDir={session.workingDir}
-                command={session.command}
-                isActive={session.id === activeSessionId}
-                onStatusChange={(status) => handleStatusChange(session.id, status)}
-              />
-            ))}
-
-          {restored && sessions.length === 0 && (
-            <WelcomeScreen onNewTab={() => setShowNewDialog(true)} />
-          )}
-
-          {active?.worktreePath && active?.baseBranch && (
-            <DiffPanel
-              open={diffPanelOpen}
-              onClose={() => setDiffPanelOpen(false)}
-              worktreePath={active.worktreePath}
-              baseBranch={active.baseBranch}
-              sessionName={active.name}
-            />
-          )}
-        </div>
+        <TerminalArea
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          restored={restored}
+          diffPanelOpen={diffPanelOpen}
+          diffPath={diffPath}
+          activeBranch={active?.baseBranch}
+          activeSessionName={active?.name}
+          onCloseDiffPanel={() => setDiffPanelOpen(false)}
+          onStatusChange={handleStatusChange}
+          onNewTab={() => setShowNewDialog(true)}
+          splitOpen={split.isOpen}
+          splitRatio={split.splitRatio}
+          onSplitDrag={split.handleDrag}
+          onSetContainerHeight={split.setContainerHeight}
+        />
       </div>
 
       <NewSessionDialog

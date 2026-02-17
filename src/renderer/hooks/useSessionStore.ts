@@ -8,6 +8,7 @@ import type {
   ClaudeModel,
   PersistedTab,
   GitSetupResult,
+  GitInfoResult,
 } from "../../shared/types";
 
 interface SessionStoreState {
@@ -84,6 +85,7 @@ export function useSessionStore() {
       mode: ClaudeMode,
       model: ClaudeModel,
       gitResult?: GitSetupResult,
+      gitInfo?: GitInfoResult,
     ): Session => {
       const command = buildClaudeCommand(mode, model);
       const effectiveDir = gitResult?.success ? gitResult.worktreePath : workingDir;
@@ -99,8 +101,16 @@ export function useSessionStore() {
         activityState: "idling",
         gitBranch: gitResult?.success ? gitResult.branchName : undefined,
         worktreePath: gitResult?.success ? gitResult.worktreePath : undefined,
-        baseBranch: gitResult?.success ? gitResult.baseBranch : undefined,
-        repoRoot: gitResult?.success ? gitResult.repoRoot : undefined,
+        baseBranch: gitResult?.success
+          ? gitResult.baseBranch
+          : gitInfo?.isRepo
+            ? gitInfo.defaultBranch
+            : undefined,
+        repoRoot: gitResult?.success
+          ? gitResult.repoRoot
+          : gitInfo?.isRepo
+            ? gitInfo.repoRoot
+            : undefined,
         createdAt: Date.now(),
       };
 

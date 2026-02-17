@@ -3,7 +3,7 @@ import { promisify } from "util";
 import path from "path";
 import fs from "fs/promises";
 
-import type { GitSetupResult, PersistedTab } from "../shared/types";
+import type { GitSetupResult, GitInfoResult, PersistedTab } from "../shared/types";
 
 const execFileAsync = promisify(execFile);
 const GIT_TIMEOUT = 30_000;
@@ -50,6 +50,37 @@ export async function getCurrentBranch(dir: string): Promise<string | null> {
 export async function getRepoRoot(dir: string): Promise<string> {
   const { stdout } = await git(["rev-parse", "--show-toplevel"], dir);
   return stdout.trim();
+}
+
+export async function getDefaultBranch(dir: string): Promise<string> {
+  try {
+    const { stdout } = await git(["branch", "--list", "main", "master"], dir);
+    const branches = stdout
+      .split("\n")
+      .map((b) => b.replace("*", "").trim())
+      .filter(Boolean);
+    if (branches.includes("main")) return "main";
+    if (branches.includes("master")) return "master";
+  } catch {}
+  return (await getCurrentBranch(dir)) || "main";
+}
+
+export async function getGitInfo(workingDir: string): Promise<GitInfoResult> {
+  const empty: GitInfoResult = {
+    isRepo: false,
+    repoRoot: "",
+    currentBranch: "",
+    defaultBranch: "",
+  };
+  try {
+    if (!(await isGitRepo(workingDir))) return empty;
+    const repoRoot = await getRepoRoot(workingDir);
+    const currentBranch = (await getCurrentBranch(workingDir)) || "main";
+    const defaultBranch = await getDefaultBranch(workingDir);
+    return { isRepo: true, repoRoot, currentBranch, defaultBranch };
+  } catch {
+    return empty;
+  }
 }
 
 function sanitizeBranchName(name: string, sessionId: string): string {

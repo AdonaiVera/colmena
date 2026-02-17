@@ -68,6 +68,13 @@ export interface PtyCreateOptions {
   command?: string;
 }
 
+export interface GitInfoResult {
+  isRepo: boolean;
+  repoRoot: string;
+  currentBranch: string;
+  defaultBranch: string;
+}
+
 export interface GitSetupResult {
   success: boolean;
   worktreePath: string;
@@ -109,6 +116,7 @@ export interface IpcChannels {
     worktreePath: string,
     branchName: string,
   ) => Promise<void>;
+  "git:getInfo": (workingDir: string) => Promise<GitInfoResult>;
   "git:getBranch": (workingDir: string) => Promise<string | null>;
   "git:getDiff": (worktreePath: string, baseBranch: string) => Promise<GitDiffFile[]>;
   "git:revertFile": (

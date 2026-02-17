@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { PtyCreateOptions, PersistedTab, GitSetupResult, GitDiffFile } from "../shared/types";
+import type {
+  PtyCreateOptions,
+  PersistedTab,
+  GitSetupResult,
+  GitInfoResult,
+  GitDiffFile,
+} from "../shared/types";
 
 const api = {
   pty: {
@@ -39,6 +45,8 @@ const api = {
       branchName: string,
     ): Promise<void> =>
       ipcRenderer.invoke("git:cleanup", sessionId, repoRoot, worktreePath, branchName),
+    getInfo: (workingDir: string): Promise<GitInfoResult> =>
+      ipcRenderer.invoke("git:getInfo", workingDir),
     getBranch: (workingDir: string): Promise<string | null> =>
       ipcRenderer.invoke("git:getBranch", workingDir),
     getDiff: (worktreePath: string, baseBranch: string): Promise<GitDiffFile[]> =>
