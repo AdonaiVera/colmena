@@ -6,7 +6,7 @@
 
 ## Architecture
 
-- **Main process** (`src/main/`): Electron main, node-pty management, IPC handlers
+- **Main process** (`src/main/`): Electron main, node-pty management, IPC handlers, Claude Code hooks
 - **Preload** (`src/preload/`): Context bridge exposing safe IPC API
 - **Renderer** (`src/renderer/`): React UI with xterm.js terminals
 - **Shared** (`src/shared/`): Types shared between main and renderer

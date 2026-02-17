@@ -2,14 +2,20 @@ import * as pty from "node-pty";
 import { BrowserWindow } from "electron";
 import os from "os";
 import { execFileSync } from "child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { join } from "path";
 
-import type { PtyCreateOptions } from "../shared/types";
+import type { PtyCreateOptions, ActivityState } from "../shared/types";
 
 interface PtySession {
   process: pty.IPty;
   sessionId: string;
+  pollInterval: ReturnType<typeof setInterval> | undefined;
+  lastStatus: string;
 }
 
+const POLL_INTERVAL_MS = 250;
+const SESSIONS_DIR = join(os.homedir(), ".colmena", "sessions");
 const sessions = new Map<string, PtySession>();
 
 let cachedShellPath: string | null = null;
@@ -41,11 +47,51 @@ function getDefaultShell(): string {
   return process.env.SHELL || "/bin/zsh";
 }
 
+function createSessionDir(sessionId: string): void {
+  const dir = join(SESSIONS_DIR, sessionId);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "status"), "", "utf-8");
+}
+
+function cleanupSessionDir(sessionId: string): void {
+  const dir = join(SESSIONS_DIR, sessionId);
+  if (existsSync(dir)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+function readSessionStatus(sessionId: string): string {
+  try {
+    const content = readFileSync(join(SESSIONS_DIR, sessionId, "status"), "utf-8");
+    return content.split("\n")[0]?.trim() || "";
+  } catch {
+    return "";
+  }
+}
+
+function mapStatusToActivity(status: string): ActivityState | null {
+  switch (status) {
+    case "UserPromptSubmit":
+    case "PreToolUse":
+      return "running";
+    case "Stop":
+      return "idling";
+    case "PermissionRequest":
+    case "AskUserQuestion":
+    case "NeedsInput":
+      return "needs_input";
+    default:
+      return null;
+  }
+}
+
 export function createSession(window: BrowserWindow, opts: PtyCreateOptions): void {
   if (sessions.has(opts.sessionId)) return;
 
   const shell = getDefaultShell();
   const cwd = opts.workingDir || os.homedir();
+
+  createSessionDir(opts.sessionId);
 
   const env = {
     ...process.env,
@@ -72,23 +118,39 @@ export function createSession(window: BrowserWindow, opts: PtyCreateOptions): vo
     env,
   });
 
+  const session: PtySession = {
+    process: ptyProcess,
+    sessionId: opts.sessionId,
+    pollInterval: undefined,
+    lastStatus: "",
+  };
+
   ptyProcess.onData((data) => {
     if (!window.isDestroyed()) {
       window.webContents.send("pty:data", opts.sessionId, data);
     }
   });
 
+  session.pollInterval = setInterval(() => {
+    const status = readSessionStatus(opts.sessionId);
+    if (status === session.lastStatus || !status) return;
+    session.lastStatus = status;
+    const activity = mapStatusToActivity(status);
+    if (activity && !window.isDestroyed()) {
+      window.webContents.send("pty:activity", opts.sessionId, activity);
+    }
+  }, POLL_INTERVAL_MS);
+
   ptyProcess.onExit(({ exitCode }) => {
+    clearInterval(session.pollInterval);
+    cleanupSessionDir(opts.sessionId);
     if (!window.isDestroyed()) {
       window.webContents.send("pty:exit", opts.sessionId, exitCode);
     }
     sessions.delete(opts.sessionId);
   });
 
-  sessions.set(opts.sessionId, {
-    process: ptyProcess,
-    sessionId: opts.sessionId,
-  });
+  sessions.set(opts.sessionId, session);
 }
 
 export function writeToSession(sessionId: string, data: string): void {
@@ -108,6 +170,8 @@ export function resizeSession(sessionId: string, cols: number, rows: number): vo
 export function destroySession(sessionId: string): void {
   const session = sessions.get(sessionId);
   if (session) {
+    clearInterval(session.pollInterval);
+    cleanupSessionDir(sessionId);
     session.process.kill();
     sessions.delete(sessionId);
   }
@@ -115,6 +179,8 @@ export function destroySession(sessionId: string): void {
 
 export function destroyAllSessions(): void {
   for (const [id, session] of sessions) {
+    clearInterval(session.pollInterval);
+    cleanupSessionDir(id);
     session.process.kill();
     sessions.delete(id);
   }

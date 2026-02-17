@@ -5,10 +5,13 @@ import { useSessionStore } from "./hooks/useSessionStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useGitBranch } from "./hooks/useGitBranch";
 import { useSplitTerminal } from "./hooks/useSplitTerminal";
+import { useActivityDetection } from "./hooks/useActivityDetection";
+import { useNotifications } from "./hooks/useNotifications";
 import { Sidebar } from "./components/Sidebar";
+import { TitleBar } from "./components/TitleBar";
 import { NewSessionDialog } from "./components/NewSessionDialog";
+import { CloseSessionDialog } from "./components/CloseSessionDialog";
 import { TerminalArea } from "./components/TerminalArea";
-import { getBaseName } from "./lib/utils";
 import type { ClaudeMode, ClaudeModel } from "../shared/types";
 
 export function App() {
@@ -27,8 +30,13 @@ export function App() {
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [diffPanelOpen, setDiffPanelOpen] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(false);
+  const [closingSessionId, setClosingSessionId] = useState<string | null>(null);
   const split = useSplitTerminal();
 
+  const { soundEnabled, toggleSound, handleActivityChange } = useNotifications({
+    activeSessionId,
+  });
+  useActivityDetection({ sessions, updateSession, onActivityChange: handleActivityChange });
   useGitBranch({ sessions, updateSession });
 
   const toggleCheatSheet = useCallback(() => {
@@ -57,14 +65,17 @@ export function App() {
     [createSession],
   );
 
-  const handleCloseSession = useCallback(
-    (sessionId: string) => {
-      window.colmena.pty.destroy(sessionId);
-      window.colmena.pty.destroy(`split-${sessionId}`);
-      removeSession(sessionId);
-    },
-    [removeSession],
-  );
+  const handleRequestClose = useCallback((sessionId: string) => {
+    setClosingSessionId(sessionId);
+  }, []);
+
+  const handleConfirmClose = useCallback(() => {
+    if (!closingSessionId) return;
+    window.colmena.pty.destroy(closingSessionId);
+    window.colmena.pty.destroy(`split-${closingSessionId}`);
+    removeSession(closingSessionId);
+    setClosingSessionId(null);
+  }, [closingSessionId, removeSession]);
 
   const handleStatusChange = useCallback(
     (sessionId: string, status: "running" | "exited") => {
@@ -78,7 +89,7 @@ export function App() {
     activeSessionId,
     setActiveSession,
     onNewTab: () => setShowNewDialog(true),
-    onCloseTab: handleCloseSession,
+    onCloseTab: handleRequestClose,
     onToggleCheatSheet: toggleCheatSheet,
     onToggleDiffPanel: toggleDiffPanel,
     onToggleSplitTerminal: split.toggle,
@@ -86,17 +97,9 @@ export function App() {
 
   const active = sessions.find((s) => s.id === activeSessionId);
   const diffPath = active?.worktreePath || (active?.baseBranch ? active?.workingDir : undefined);
-
-  const btnStyle = (on: boolean): React.CSSProperties => ({
-    background: on ? "var(--surface-hover)" : "none",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius)",
-    color: on ? "var(--accent)" : "var(--text-muted)",
-    cursor: "pointer",
-    padding: "4px 10px",
-    fontSize: 11,
-    transition: "var(--transition)",
-  });
+  const closingSession = closingSessionId
+    ? sessions.find((s) => s.id === closingSessionId)
+    : undefined;
 
   return (
     <div
@@ -113,10 +116,12 @@ export function App() {
         activeSessionId={activeSessionId}
         onSelectSession={setActiveSession}
         onNewSession={() => setShowNewDialog(true)}
-        onCloseSession={handleCloseSession}
+        onCloseSession={handleRequestClose}
         onRenameSession={renameSession}
         showCheatSheet={showCheatSheet}
         onToggleCheatSheet={toggleCheatSheet}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => toggleSound(!soundEnabled)}
       />
 
       <div
@@ -127,49 +132,14 @@ export function App() {
           overflow: "hidden",
         }}
       >
-        <div
-          className="titlebar-drag"
-          style={{
-            height: 52,
-            backgroundColor: "var(--bg)",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 16px",
-            gap: 8,
-          }}
-        >
-          <span style={{ color: "var(--text)", fontSize: 12, fontWeight: 500 }}>
-            {active?.name || "No tab selected"}
-          </span>
-          {active?.workingDir && (
-            <span style={{ color: "var(--text-muted)", fontSize: 11 }}>
-              {getBaseName(active.workingDir)}
-            </span>
-          )}
-          {active?.gitBranch && (
-            <span style={{ color: "var(--accent)", fontSize: 11 }}>{active.gitBranch}</span>
-          )}
-          <div style={{ flex: 1 }} />
-          {active && (
-            <button
-              className="titlebar-no-drag"
-              onClick={split.toggle}
-              style={btnStyle(split.isOpen)}
-            >
-              Terminal
-            </button>
-          )}
-          {diffPath && active?.baseBranch && (
-            <button
-              className="titlebar-no-drag"
-              onClick={toggleDiffPanel}
-              style={btnStyle(diffPanelOpen)}
-            >
-              Diff
-            </button>
-          )}
-        </div>
+        <TitleBar
+          active={active}
+          splitOpen={split.isOpen}
+          diffPanelOpen={diffPanelOpen}
+          showDiffButton={!!(diffPath && active?.baseBranch)}
+          onToggleSplit={split.toggle}
+          onToggleDiff={toggleDiffPanel}
+        />
 
         <TerminalArea
           sessions={sessions}
@@ -194,6 +164,13 @@ export function App() {
         loading={sessionLoading}
         onConfirm={handleConfirmNewSession}
         onCancel={() => setShowNewDialog(false)}
+      />
+
+      <CloseSessionDialog
+        open={!!closingSessionId}
+        sessionName={closingSession?.name || "Session"}
+        onConfirm={handleConfirmClose}
+        onCancel={() => setClosingSessionId(null)}
       />
     </div>
   );

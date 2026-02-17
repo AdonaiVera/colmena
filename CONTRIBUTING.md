@@ -52,6 +52,7 @@ src/
     ipc.ts        # IPC handler registration
     pty-manager.ts# node-pty session management
     store.ts      # electron-store persistence
+    hooks-config.ts # Claude Code hooks injection
   preload/        # Context bridge (main <-> renderer)
     index.ts      # Exposes safe IPC API to renderer
   renderer/       # React UI

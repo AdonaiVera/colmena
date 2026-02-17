@@ -109,6 +109,7 @@ export interface IpcChannels {
   "pty:destroy": (sessionId: string) => void;
   "pty:data": (sessionId: string, data: string) => void;
   "pty:exit": (sessionId: string, exitCode: number) => void;
+  "pty:activity": (sessionId: string, state: ActivityState) => void;
   "git:setup": (sessionId: string, workingDir: string) => Promise<GitSetupResult>;
   "git:cleanup": (
     sessionId: string,
@@ -131,4 +132,6 @@ export interface IpcChannels {
     baseBranch: string,
   ) => Promise<boolean>;
   "git:writeFile": (worktreePath: string, filePath: string, content: string) => Promise<boolean>;
+  "settings:getSoundEnabled": () => Promise<boolean>;
+  "settings:setSoundEnabled": (enabled: boolean) => void;
 }

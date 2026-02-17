@@ -14,8 +14,8 @@ interface SessionItemProps {
 
 const STATUS_COLORS: Record<string, string> = {
   idling: "var(--text-secondary)",
-  running: "var(--accent)",
-  finished: "var(--success)",
+  running: "var(--success)",
+  finished: "var(--text-secondary)",
   needs_input: "var(--error)",
 };
 
