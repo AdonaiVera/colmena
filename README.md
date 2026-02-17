@@ -21,11 +21,15 @@
 
 Run multiple Claude Code agents side by side. Each tab is an independent session with its own PTY, so you can work on different projects or tasks without switching windows.
 
+I created Colmena because I was looking for something open-source that I could modify, personalize, and make my own. No more VSCode, no more Cursor, no more IDEs telling me how to work. My environment, my style, built only for me. Use this as a baseline, add the features you actually want, shape it however you like, and create your own Colmena.
+
 ## Features
 
 - **Multi-tab sessions** — run several Claude Code agents at once
 - **Session modes** — start fresh, continue last conversation, or pick one to resume
 - **Model selection** — choose between Sonnet, Opus, or Haiku per tab
+- **Git diff panel** — view changes against the default branch in any session mode
+- **Split terminal** — open a shell below any session for manual git commands (Cmd+J)
 - **Persistent tabs** — sessions restore when you relaunch
 - **Smart restart** — exited sessions restart on keypress; failed modes fall back to new
 - **In-terminal search** — Cmd+F to find text in any session

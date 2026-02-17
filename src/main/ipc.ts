@@ -2,7 +2,7 @@ import { ipcMain, dialog, type BrowserWindow } from "electron";
 
 import { createSession, writeToSession, resizeSession, destroySession } from "./pty-manager";
 import { saveTabs, loadTabs } from "./store";
-import { setupWorktree, cleanupWorktree, getCurrentBranch } from "./git-manager";
+import { setupWorktree, cleanupWorktree, getCurrentBranch, getGitInfo } from "./git-manager";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
 
@@ -56,6 +56,10 @@ export function registerIpcHandlers(window: BrowserWindow): void {
       await cleanupWorktree(repoRoot, worktreePath, branchName);
     },
   );
+
+  ipcMain.handle("git:getInfo", async (_event, workingDir: string) => {
+    return getGitInfo(workingDir);
+  });
 
   ipcMain.handle("git:getBranch", async (_event, workingDir: string) => {
     return getCurrentBranch(workingDir);
