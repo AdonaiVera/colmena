@@ -12,9 +12,6 @@ app.setName("Colmena");
 const iconPath = app.isPackaged
   ? join(process.resourcesPath, "icon.png")
   : join(__dirname, "../../resources/icon.png");
-if (process.platform === "darwin" && app.dock) {
-  app.dock.setIcon(iconPath);
-}
 
 let mainWindow: BrowserWindow | null = null;
 
