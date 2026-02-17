@@ -33,6 +33,8 @@ I created Colmena because I was looking for something open-source that I could m
 - **Persistent tabs** — sessions restore when you relaunch
 - **Smart restart** — exited sessions restart on keypress; failed modes fall back to new
 - **In-terminal search** — Cmd+F to find text in any session
+- **Activity indicators** — colored dots show when Claude is running, idle, or needs input
+- **Sound notifications** — bee buzz alert when Claude needs attention in a background tab
 
 ## Quick Start
 

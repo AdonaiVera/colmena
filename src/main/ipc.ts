@@ -1,7 +1,7 @@
 import { ipcMain, dialog, type BrowserWindow } from "electron";
 
 import { createSession, writeToSession, resizeSession, destroySession } from "./pty-manager";
-import { saveTabs, loadTabs } from "./store";
+import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled } from "./store";
 import { setupWorktree, cleanupWorktree, getCurrentBranch, getGitInfo } from "./git-manager";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
@@ -29,6 +29,14 @@ export function registerIpcHandlers(window: BrowserWindow): void {
 
   ipcMain.handle("store:loadTabs", () => {
     return loadTabs();
+  });
+
+  ipcMain.handle("settings:getSoundEnabled", () => {
+    return getSoundEnabled();
+  });
+
+  ipcMain.on("settings:setSoundEnabled", (_event, enabled: boolean) => {
+    setSoundEnabled(enabled);
   });
 
   ipcMain.handle("dialog:openFolder", async () => {

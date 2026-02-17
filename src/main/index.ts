@@ -5,6 +5,7 @@ import { registerIpcHandlers } from "./ipc";
 import { destroyAllSessions } from "./pty-manager";
 import { cleanupOrphanedWorktrees } from "./git-manager";
 import { loadTabs } from "./store";
+import { ensureHooks } from "./hooks-config";
 
 app.setName("Colmena");
 
@@ -52,6 +53,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  ensureHooks();
   const tabs = loadTabs();
   await cleanupOrphanedWorktrees(tabs).catch(() => {});
   createWindow();

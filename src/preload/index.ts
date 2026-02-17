@@ -6,6 +6,7 @@ import type {
   GitSetupResult,
   GitInfoResult,
   GitDiffFile,
+  ActivityState,
 } from "../shared/types";
 
 const api = {
@@ -27,6 +28,15 @@ const api = {
       ipcRenderer.on("pty:exit", handler);
       return () => ipcRenderer.removeListener("pty:exit", handler);
     },
+    onActivity: (callback: (sessionId: string, state: ActivityState) => void) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        sessionId: string,
+        state: ActivityState,
+      ) => callback(sessionId, state);
+      ipcRenderer.on("pty:activity", handler);
+      return () => ipcRenderer.removeListener("pty:activity", handler);
+    },
   },
   store: {
     saveTabs: (tabs: PersistedTab[]) => ipcRenderer.send("store:saveTabs", tabs),
@@ -34,6 +44,10 @@ const api = {
   },
   dialog: {
     openFolder: (): Promise<string | null> => ipcRenderer.invoke("dialog:openFolder"),
+  },
+  settings: {
+    getSoundEnabled: (): Promise<boolean> => ipcRenderer.invoke("settings:getSoundEnabled"),
+    setSoundEnabled: (enabled: boolean) => ipcRenderer.send("settings:setSoundEnabled", enabled),
   },
   git: {
     setup: (sessionId: string, workingDir: string): Promise<GitSetupResult> =>

@@ -1,3 +1,5 @@
+import { Volume2, VolumeX } from "lucide-react";
+
 import type { Session } from "../../shared/types";
 import { ColmenaLogo } from "./ColmenaLogo";
 import { SessionItem } from "./SessionItem";
@@ -13,6 +15,8 @@ interface SidebarProps {
   onRenameSession: (id: string, name: string) => void;
   showCheatSheet: boolean;
   onToggleCheatSheet: () => void;
+  soundEnabled: boolean;
+  onToggleSound: () => void;
 }
 
 export function Sidebar({
@@ -24,6 +28,8 @@ export function Sidebar({
   onRenameSession,
   showCheatSheet,
   onToggleCheatSheet,
+  soundEnabled,
+  onToggleSound,
 }: SidebarProps) {
   return (
     <div
@@ -106,6 +112,38 @@ export function Sidebar({
           borderTop: "1px solid var(--border)",
         }}
       >
+        <button
+          className="titlebar-no-drag"
+          onClick={onToggleSound}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            width: "100%",
+            background: "none",
+            border: "none",
+            borderRadius: "var(--radius)",
+            color: soundEnabled ? "var(--accent)" : "var(--text-muted)",
+            cursor: "pointer",
+            padding: "6px 8px",
+            fontSize: 12,
+            transition: "var(--transition)",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+        >
+          {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+          <span>Sound</span>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: 10,
+              opacity: 0.6,
+            }}
+          >
+            {soundEnabled ? "On" : "Off"}
+          </span>
+        </button>
         <button
           className="titlebar-no-drag"
           onClick={onToggleCheatSheet}
