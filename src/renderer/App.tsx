@@ -53,13 +53,22 @@ export function App() {
   }, []);
 
   const handleConfirmNewSession = useCallback(
-    async (config: { workingDir: string; mode: ClaudeMode; model: ClaudeModel }) => {
+    async (config: {
+      workingDir: string;
+      mode: ClaudeMode;
+      model: ClaudeModel;
+      existingBranch?: string;
+    }) => {
       setSessionLoading(true);
       const sessionId = nanoid();
       let gitResult;
       let gitInfo;
       if (config.mode === "new") {
-        gitResult = await window.colmena.git.setup(sessionId, config.workingDir);
+        gitResult = await window.colmena.git.setup(
+          sessionId,
+          config.workingDir,
+          config.existingBranch,
+        );
       } else {
         gitInfo = await window.colmena.git.getInfo(config.workingDir);
       }

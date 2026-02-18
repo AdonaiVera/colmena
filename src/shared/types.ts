@@ -110,7 +110,12 @@ export interface IpcChannels {
   "pty:data": (sessionId: string, data: string) => void;
   "pty:exit": (sessionId: string, exitCode: number) => void;
   "pty:activity": (sessionId: string, state: ActivityState) => void;
-  "git:setup": (sessionId: string, workingDir: string) => Promise<GitSetupResult>;
+  "git:setup": (
+    sessionId: string,
+    workingDir: string,
+    existingBranch?: string,
+  ) => Promise<GitSetupResult>;
+  "git:listBranches": (workingDir: string) => Promise<string[]>;
   "git:cleanup": (
     sessionId: string,
     repoRoot: string,

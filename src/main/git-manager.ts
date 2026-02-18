@@ -3,7 +3,7 @@ import { promisify } from "util";
 import path from "path";
 import fs from "fs/promises";
 
-import type { GitSetupResult, GitInfoResult, PersistedTab } from "../shared/types";
+import type { GitSetupResult, GitInfoResult } from "../shared/types";
 
 const execFileAsync = promisify(execFile);
 const GIT_TIMEOUT = 30_000;
@@ -90,8 +90,7 @@ function sanitizeBranchName(name: string, sessionId: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 40);
-  const shortId = sessionId.slice(0, 6);
-  return `colmena/${clean || "session"}-${shortId}`;
+  return `colmena/${clean || "session"}-${sessionId.slice(0, 6)}`;
 }
 
 async function addToGitExclude(repoRoot: string): Promise<void> {
@@ -106,9 +105,25 @@ async function addToGitExclude(repoRoot: string): Promise<void> {
   }
 }
 
+export async function listBranches(dir: string): Promise<string[]> {
+  try {
+    if (!(await isGitRepo(dir))) return [];
+    const repoRoot = await getRepoRoot(dir);
+    const currentBranch = await getCurrentBranch(repoRoot);
+    const { stdout } = await git(["branch", "--list", "--format=%(refname:short)"], repoRoot);
+    return stdout
+      .split("\n")
+      .map((b) => b.trim())
+      .filter((b) => b && b !== currentBranch);
+  } catch {
+    return [];
+  }
+}
+
 export async function setupWorktree(
   sessionId: string,
   workingDir: string,
+  existingBranch?: string,
 ): Promise<GitSetupResult> {
   const empty: GitSetupResult = {
     success: false,
@@ -129,12 +144,17 @@ export async function setupWorktree(
 
     const repoRoot = await getRepoRoot(workingDir);
     const baseBranch = (await getCurrentBranch(workingDir)) || "main";
-    const folderName = path.basename(workingDir);
-    const branchName = sanitizeBranchName(folderName, sessionId);
-    const worktreePath = path.join(repoRoot, WORKTREE_DIR, branchName.replace("/", "-"));
+
+    const branchName = existingBranch || sanitizeBranchName(path.basename(workingDir), sessionId);
+    const safeName = branchName.replace(/\//g, "-");
+    const worktreePath = path.join(repoRoot, WORKTREE_DIR, safeName);
 
     await fs.mkdir(path.join(repoRoot, WORKTREE_DIR), { recursive: true });
-    await git(["worktree", "add", "-b", branchName, worktreePath, baseBranch], repoRoot);
+    if (existingBranch) {
+      await git(["worktree", "add", worktreePath, existingBranch], repoRoot);
+    } else {
+      await git(["worktree", "add", "-b", branchName, worktreePath, baseBranch], repoRoot);
+    }
     await addToGitExclude(repoRoot);
 
     return { success: true, worktreePath, branchName, baseBranch, repoRoot };
@@ -157,39 +177,12 @@ export async function cleanupWorktree(
       await git(["worktree", "prune"], repoRoot);
     } catch {}
   }
-
   try {
     await git(["branch", "-D", branchName], repoRoot);
   } catch {}
-
   try {
     const wtDir = path.join(repoRoot, WORKTREE_DIR);
     const entries = await fs.readdir(wtDir);
     if (entries.length === 0) await fs.rmdir(wtDir);
   } catch {}
-}
-
-export async function cleanupOrphanedWorktrees(tabs: PersistedTab[]): Promise<void> {
-  const activeWorktrees = new Set(tabs.filter((t) => t.worktreePath).map((t) => t.worktreePath!));
-
-  const repoRoots = new Set(tabs.filter((t) => t.repoRoot).map((t) => t.repoRoot!));
-
-  for (const repoRoot of repoRoots) {
-    const wtDir = path.join(repoRoot, WORKTREE_DIR);
-    try {
-      const entries = await fs.readdir(wtDir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        const fullPath = path.join(wtDir, entry.name);
-        if (!activeWorktrees.has(fullPath)) {
-          try {
-            await git(["worktree", "remove", fullPath, "--force"], repoRoot);
-          } catch {
-            await fs.rm(fullPath, { recursive: true, force: true });
-          }
-        }
-      }
-      await git(["worktree", "prune"], repoRoot).catch(() => {});
-    } catch {}
-  }
 }
