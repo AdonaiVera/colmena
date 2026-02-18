@@ -108,3 +108,8 @@ body,
   opacity: 1;
   color: var(--error);
 }
+
+@keyframes colmena-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}

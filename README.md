@@ -29,6 +29,7 @@ I created Colmena because I was looking for something open-source that I could m
 - **Session modes** — start fresh, continue last conversation, or pick one to resume
 - **Model selection** — choose between Sonnet, Opus, or Haiku per tab
 - **Git diff panel** — view changes against the default branch in any session mode
+- **Evaluator agent** — one-click session evaluation with score, feedback, and send-to-agent action (Cmd+E)
 - **Split terminal** — open a shell below any session for manual git commands (Cmd+J)
 - **Persistent tabs** — sessions restore when you relaunch
 - **Smart restart** — exited sessions restart on keypress; failed modes fall back to new

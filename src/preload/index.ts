@@ -77,6 +77,21 @@ const api = {
     writeFile: (worktreePath: string, filePath: string, content: string): Promise<boolean> =>
       ipcRenderer.invoke("git:writeFile", worktreePath, filePath, content),
   },
+  evaluator: {
+    start: (cwd: string, baseBranch?: string): Promise<{ error?: string }> =>
+      ipcRenderer.invoke("evaluator:start", cwd, baseBranch),
+    abort: () => ipcRenderer.send("evaluator:abort"),
+    onData: (callback: (chunk: string) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, chunk: string) => callback(chunk);
+      ipcRenderer.on("evaluator:data", handler);
+      return () => ipcRenderer.removeListener("evaluator:data", handler);
+    },
+    onDone: (callback: (error: string | null) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, error: string | null) => callback(error);
+      ipcRenderer.on("evaluator:done", handler);
+      return () => ipcRenderer.removeListener("evaluator:done", handler);
+    },
+  },
 };
 
 export type ColmenaApi = typeof api;
