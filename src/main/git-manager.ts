@@ -90,8 +90,7 @@ function sanitizeBranchName(name: string, sessionId: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 40);
-  const shortId = sessionId.slice(0, 6);
-  return `colmena/${clean || "session"}-${shortId}`;
+  return `colmena/${clean || "session"}-${sessionId.slice(0, 6)}`;
 }
 
 async function addToGitExclude(repoRoot: string): Promise<void> {

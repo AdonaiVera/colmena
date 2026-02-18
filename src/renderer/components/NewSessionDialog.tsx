@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { FolderPicker } from "./FolderPicker";
 import { BranchPicker, NEW_BRANCH_VALUE } from "./BranchPicker";
 import { getBaseName } from "../lib/utils";
-import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "../lib/dialog-styles";
+import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-styles";
 import type { ClaudeMode, ClaudeModel } from "../../shared/types";
 import { CLAUDE_MODES, CLAUDE_MODELS } from "../../shared/types";
 
@@ -24,6 +24,32 @@ interface NewSessionDialogProps {
   onConfirm: (config: NewTabConfig) => void;
   onCancel: () => void;
 }
+
+const contentStyle: React.CSSProperties = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  maxWidth: 460,
+  padding: 0,
+  gap: 0,
+  borderRadius: 12,
+};
+
+const btnBase: React.CSSProperties = { fontSize: 13, height: 36, borderRadius: 8 };
+
+const cancelBtnStyle: React.CSSProperties = {
+  ...btnBase,
+  borderColor: "var(--border)",
+  color: "var(--text-secondary)",
+  padding: "0 16px",
+};
+
+const submitBtnBase: React.CSSProperties = {
+  ...btnBase,
+  backgroundColor: "var(--accent)",
+  color: "var(--bg)",
+  fontWeight: 600,
+  padding: "0 20px",
+};
 
 export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSessionDialogProps) {
   const [mode, setMode] = useState<ClaudeMode>("new");
@@ -74,17 +100,7 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onCancel()}>
-      <DialogContent
-        showCloseButton={false}
-        style={{
-          backgroundColor: "var(--surface)",
-          border: "1px solid var(--border)",
-          maxWidth: 460,
-          padding: 0,
-          gap: 0,
-          borderRadius: 12,
-        }}
-      >
+      <DialogContent showCloseButton={false} style={contentStyle}>
         <div style={{ padding: "28px 28px 0" }}>
           <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>
             New Tab
@@ -127,7 +143,7 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
           </div>
         </div>
 
-        {mode === "new" && workingDir && (
+        {mode === "new" && (
           <BranchPicker
             branches={branches}
             selectedBranch={selectedBranch}
@@ -143,14 +159,7 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
             size="sm"
             onClick={onCancel}
             disabled={loading}
-            style={{
-              borderColor: "var(--border)",
-              color: "var(--text-secondary)",
-              fontSize: 13,
-              height: 36,
-              padding: "0 16px",
-              borderRadius: 8,
-            }}
+            style={cancelBtnStyle}
           >
             Cancel
           </Button>
@@ -158,16 +167,7 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
             size="sm"
             onClick={handleSubmit}
             disabled={loading}
-            style={{
-              backgroundColor: "var(--accent)",
-              color: "var(--bg)",
-              fontSize: 13,
-              fontWeight: 600,
-              height: 36,
-              padding: "0 20px",
-              borderRadius: 8,
-              opacity: loading ? 0.7 : 1,
-            }}
+            style={{ ...submitBtnBase, opacity: loading ? 0.7 : 1 }}
           >
             {loading ? "Setting up..." : "Open"}
           </Button>

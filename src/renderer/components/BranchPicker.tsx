@@ -1,7 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Label } from "./ui/label";
-
-import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "../lib/dialog-styles";
+import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-styles";
 
 interface BranchPickerProps {
   branches: string[];
