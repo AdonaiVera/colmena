@@ -50,15 +50,29 @@ const api = {
     setSoundEnabled: (enabled: boolean) => ipcRenderer.send("settings:setSoundEnabled", enabled),
   },
   git: {
-    setup: (sessionId: string, workingDir: string): Promise<GitSetupResult> =>
-      ipcRenderer.invoke("git:setup", sessionId, workingDir),
+    setup: (
+      sessionId: string,
+      workingDir: string,
+      existingBranch?: string,
+    ): Promise<GitSetupResult> =>
+      ipcRenderer.invoke("git:setup", sessionId, workingDir, existingBranch),
+    listBranches: (workingDir: string): Promise<string[]> =>
+      ipcRenderer.invoke("git:listBranches", workingDir),
     cleanup: (
       sessionId: string,
       repoRoot: string,
       worktreePath: string,
       branchName: string,
+      isExistingBranch?: boolean,
     ): Promise<void> =>
-      ipcRenderer.invoke("git:cleanup", sessionId, repoRoot, worktreePath, branchName),
+      ipcRenderer.invoke(
+        "git:cleanup",
+        sessionId,
+        repoRoot,
+        worktreePath,
+        branchName,
+        isExistingBranch,
+      ),
     getInfo: (workingDir: string): Promise<GitInfoResult> =>
       ipcRenderer.invoke("git:getInfo", workingDir),
     getBranch: (workingDir: string): Promise<string | null> =>

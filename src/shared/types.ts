@@ -45,6 +45,7 @@ export interface Session {
   worktreePath?: string;
   baseBranch?: string;
   repoRoot?: string;
+  isExistingBranch?: boolean;
   createdAt: number;
 }
 
@@ -58,6 +59,7 @@ export interface PersistedTab {
   worktreePath?: string;
   baseBranch?: string;
   repoRoot?: string;
+  isExistingBranch?: boolean;
 }
 
 export interface PtyCreateOptions {
@@ -81,6 +83,7 @@ export interface GitSetupResult {
   branchName: string;
   baseBranch: string;
   repoRoot: string;
+  isExistingBranch?: boolean;
   error?: string;
 }
 
@@ -110,12 +113,18 @@ export interface IpcChannels {
   "pty:data": (sessionId: string, data: string) => void;
   "pty:exit": (sessionId: string, exitCode: number) => void;
   "pty:activity": (sessionId: string, state: ActivityState) => void;
-  "git:setup": (sessionId: string, workingDir: string) => Promise<GitSetupResult>;
+  "git:setup": (
+    sessionId: string,
+    workingDir: string,
+    existingBranch?: string,
+  ) => Promise<GitSetupResult>;
+  "git:listBranches": (workingDir: string) => Promise<string[]>;
   "git:cleanup": (
     sessionId: string,
     repoRoot: string,
     worktreePath: string,
     branchName: string,
+    isExistingBranch?: boolean,
   ) => Promise<void>;
   "git:getInfo": (workingDir: string) => Promise<GitInfoResult>;
   "git:getBranch": (workingDir: string) => Promise<string | null>;

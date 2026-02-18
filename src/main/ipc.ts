@@ -2,7 +2,8 @@ import { ipcMain, dialog, type BrowserWindow } from "electron";
 
 import { createSession, writeToSession, resizeSession, destroySession } from "./pty-manager";
 import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled } from "./store";
-import { setupWorktree, cleanupWorktree, getCurrentBranch, getGitInfo } from "./git-manager";
+import { setupWorktree, getCurrentBranch, getGitInfo, listBranches } from "./git-manager";
+import { cleanupWorktree } from "./git-cleanup";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import { startEvaluation, abortEvaluation } from "./evaluator";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
@@ -49,8 +50,15 @@ export function registerIpcHandlers(window: BrowserWindow): void {
     return result.filePaths[0];
   });
 
-  ipcMain.handle("git:setup", async (_event, sessionId: string, workingDir: string) => {
-    return setupWorktree(sessionId, workingDir);
+  ipcMain.handle(
+    "git:setup",
+    async (_event, sessionId: string, workingDir: string, existingBranch?: string) => {
+      return setupWorktree(sessionId, workingDir, existingBranch);
+    },
+  );
+
+  ipcMain.handle("git:listBranches", async (_event, workingDir: string) => {
+    return listBranches(workingDir);
   });
 
   ipcMain.handle(
@@ -61,8 +69,9 @@ export function registerIpcHandlers(window: BrowserWindow): void {
       repoRoot: string,
       worktreePath: string,
       branchName: string,
+      isExistingBranch?: boolean,
     ) => {
-      await cleanupWorktree(repoRoot, worktreePath, branchName);
+      await cleanupWorktree(repoRoot, worktreePath, branchName, isExistingBranch);
     },
   );
 

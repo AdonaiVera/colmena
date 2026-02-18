@@ -3,7 +3,7 @@ import { join } from "path";
 
 import { registerIpcHandlers } from "./ipc";
 import { destroyAllSessions } from "./pty-manager";
-import { cleanupOrphanedWorktrees } from "./git-manager";
+import { cleanupOrphanedWorktrees } from "./git-cleanup";
 import { loadTabs } from "./store";
 import { ensureHooks } from "./hooks-config";
 

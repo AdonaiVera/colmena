@@ -5,7 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { FolderPicker } from "./FolderPicker";
+import { BranchPicker, NEW_BRANCH_VALUE } from "./BranchPicker";
 import { getBaseName } from "../lib/utils";
+import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "../lib/dialog-styles";
 import type { ClaudeMode, ClaudeModel } from "../../shared/types";
 import { CLAUDE_MODES, CLAUDE_MODELS } from "../../shared/types";
 
@@ -13,6 +15,7 @@ interface NewTabConfig {
   workingDir: string;
   mode: ClaudeMode;
   model: ClaudeModel;
+  existingBranch?: string;
 }
 
 interface NewSessionDialogProps {
@@ -22,53 +25,45 @@ interface NewSessionDialogProps {
   onCancel: () => void;
 }
 
-const triggerStyle: React.CSSProperties = {
-  backgroundColor: "var(--bg)",
-  border: "1px solid var(--border)",
-  color: "var(--text)",
-  height: 44,
-  fontSize: 13,
-  borderRadius: 8,
-  padding: "0 14px",
-  width: "100%",
-};
-
-const dropdownStyle: React.CSSProperties = {
-  backgroundColor: "var(--surface)",
-  border: "1px solid var(--border)",
-  borderRadius: 10,
-  padding: 6,
-};
-
-const labelStyle: React.CSSProperties = {
-  color: "var(--text-muted)",
-  fontSize: 12,
-  marginBottom: 8,
-  display: "block",
-};
-
-const itemStyle: React.CSSProperties = {
-  padding: "10px 32px 10px 12px",
-  borderRadius: 8,
-  fontSize: 13,
-};
-
 export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSessionDialogProps) {
   const [mode, setMode] = useState<ClaudeMode>("new");
   const [model, setModel] = useState<ClaudeModel>("default");
   const [workingDir, setWorkingDir] = useState("");
+  const [branches, setBranches] = useState<string[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState(NEW_BRANCH_VALUE);
 
   useEffect(() => {
     if (open) {
       setMode("new");
       setModel("default");
       setWorkingDir("");
+      setBranches([]);
+      setSelectedBranch(NEW_BRANCH_VALUE);
     }
   }, [open]);
 
+  useEffect(() => {
+    if (!workingDir) {
+      setBranches([]);
+      setSelectedBranch(NEW_BRANCH_VALUE);
+      return;
+    }
+    let stale = false;
+    window.colmena.git.listBranches(workingDir).then((result) => {
+      if (!stale) {
+        setBranches(result);
+        setSelectedBranch(NEW_BRANCH_VALUE);
+      }
+    });
+    return () => {
+      stale = true;
+    };
+  }, [workingDir]);
+
   const handleSubmit = useCallback(() => {
-    onConfirm({ workingDir, mode, model });
-  }, [workingDir, mode, model, onConfirm]);
+    const existingBranch = selectedBranch !== NEW_BRANCH_VALUE ? selectedBranch : undefined;
+    onConfirm({ workingDir, mode, model, existingBranch });
+  }, [workingDir, mode, model, selectedBranch, onConfirm]);
 
   const handleBrowse = useCallback(async () => {
     const folder = await window.colmena.dialog.openFolder();
@@ -131,6 +126,14 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
             </Select>
           </div>
         </div>
+
+        {mode === "new" && workingDir && (
+          <BranchPicker
+            branches={branches}
+            selectedBranch={selectedBranch}
+            onSelectBranch={setSelectedBranch}
+          />
+        )}
 
         <DialogFooter
           style={{ padding: "16px 28px", borderTop: "1px solid var(--surface-hover)", gap: 10 }}
