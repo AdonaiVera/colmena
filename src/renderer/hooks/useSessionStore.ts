@@ -34,6 +34,7 @@ function toPersistedTabs(sessions: Session[]): PersistedTab[] {
     worktreePath: s.worktreePath,
     baseBranch: s.baseBranch,
     repoRoot: s.repoRoot,
+    isExistingBranch: s.isExistingBranch,
   }));
 }
 
@@ -68,6 +69,7 @@ export function useSessionStore() {
         worktreePath: tab.worktreePath,
         baseBranch: tab.baseBranch,
         repoRoot: tab.repoRoot,
+        isExistingBranch: tab.isExistingBranch,
         createdAt: Date.now(),
       }));
       setState({
@@ -111,6 +113,7 @@ export function useSessionStore() {
           : gitInfo?.isRepo
             ? gitInfo.repoRoot
             : undefined,
+        isExistingBranch: gitResult?.success ? gitResult.isExistingBranch : undefined,
         createdAt: Date.now(),
       };
 
@@ -139,6 +142,7 @@ export function useSessionStore() {
           session.repoRoot,
           session.worktreePath,
           session.gitBranch,
+          session.isExistingBranch,
         );
       }
 

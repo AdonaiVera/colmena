@@ -45,6 +45,7 @@ export interface Session {
   worktreePath?: string;
   baseBranch?: string;
   repoRoot?: string;
+  isExistingBranch?: boolean;
   createdAt: number;
 }
 
@@ -58,6 +59,7 @@ export interface PersistedTab {
   worktreePath?: string;
   baseBranch?: string;
   repoRoot?: string;
+  isExistingBranch?: boolean;
 }
 
 export interface PtyCreateOptions {
@@ -81,6 +83,7 @@ export interface GitSetupResult {
   branchName: string;
   baseBranch: string;
   repoRoot: string;
+  isExistingBranch?: boolean;
   error?: string;
 }
 
@@ -121,6 +124,7 @@ export interface IpcChannels {
     repoRoot: string,
     worktreePath: string,
     branchName: string,
+    isExistingBranch?: boolean,
   ) => Promise<void>;
   "git:getInfo": (workingDir: string) => Promise<GitInfoResult>;
   "git:getBranch": (workingDir: string) => Promise<string | null>;

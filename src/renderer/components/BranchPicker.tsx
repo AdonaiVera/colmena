@@ -5,26 +5,31 @@ import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-sty
 interface BranchPickerProps {
   branches: string[];
   selectedBranch: string;
-  onBranchChange: (branch: string) => void;
+  onSelectBranch: (branch: string) => void;
 }
 
-export function BranchPicker({ branches, selectedBranch, onBranchChange }: BranchPickerProps) {
-  if (branches.length === 0) return null;
+const NEW_BRANCH_VALUE = "__new__";
 
+export function BranchPicker({ branches, selectedBranch, onSelectBranch }: BranchPickerProps) {
   return (
-    <div style={{ padding: "0 28px 16px" }}>
+    <div style={{ padding: "0 28px 20px" }}>
       <Label style={labelStyle}>Branch</Label>
-      <Select value={selectedBranch} onValueChange={onBranchChange}>
+      <Select value={selectedBranch} onValueChange={onSelectBranch}>
         <SelectTrigger style={triggerStyle}>
-          <SelectValue placeholder="Create new branch" />
+          <SelectValue />
         </SelectTrigger>
-        <SelectContent style={{ ...dropdownStyle, minWidth: 280 }}>
-          <SelectItem value="__new__" style={itemStyle}>
-            <span style={{ color: "var(--text)", fontSize: 13 }}>Create new branch</span>
+        <SelectContent
+          position="popper"
+          style={{ ...dropdownStyle, minWidth: 240, maxHeight: 260 }}
+        >
+          <SelectItem value={NEW_BRANCH_VALUE} style={itemStyle}>
+            <span style={{ color: "var(--accent)", fontSize: 13 }}>Create new branch</span>
           </SelectItem>
           {branches.map((b) => (
             <SelectItem key={b} value={b} style={itemStyle}>
-              <span style={{ color: "var(--text)", fontSize: 13 }}>{b}</span>
+              <span style={{ color: "var(--text)", fontSize: 13, fontFamily: "var(--font-mono)" }}>
+                {b}
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -32,3 +37,5 @@ export function BranchPicker({ branches, selectedBranch, onBranchChange }: Branc
     </div>
   );
 }
+
+export { NEW_BRANCH_VALUE };

@@ -14,6 +14,34 @@ async function git(args: string[], cwd?: string): Promise<{ stdout: string; stde
   return execFileAsync("git", args, opts);
 }
 
+export async function cleanupWorktree(
+  repoRoot: string,
+  worktreePath: string,
+  branchName: string,
+  isExistingBranch?: boolean,
+): Promise<void> {
+  try {
+    await git(["worktree", "remove", worktreePath, "--force"], repoRoot);
+  } catch {
+    try {
+      await fs.rm(worktreePath, { recursive: true, force: true });
+      await git(["worktree", "prune"], repoRoot);
+    } catch {}
+  }
+
+  if (!isExistingBranch) {
+    try {
+      await git(["branch", "-D", branchName], repoRoot);
+    } catch {}
+  }
+
+  try {
+    const wtDir = path.join(repoRoot, WORKTREE_DIR);
+    const entries = await fs.readdir(wtDir);
+    if (entries.length === 0) await fs.rmdir(wtDir);
+  } catch {}
+}
+
 export async function cleanupOrphanedWorktrees(tabs: PersistedTab[]): Promise<void> {
   const activeWorktrees = new Set(tabs.filter((t) => t.worktreePath).map((t) => t.worktreePath!));
   const repoRoots = new Set(tabs.filter((t) => t.repoRoot).map((t) => t.repoRoot!));

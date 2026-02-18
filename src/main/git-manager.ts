@@ -105,6 +105,18 @@ async function addToGitExclude(repoRoot: string): Promise<void> {
   }
 }
 
+async function removeStaleWorktree(repoRoot: string, worktreePath: string): Promise<void> {
+  try {
+    await fs.access(worktreePath);
+    await git(["worktree", "remove", worktreePath, "--force"], repoRoot);
+  } catch {
+    try {
+      await fs.rm(worktreePath, { recursive: true, force: true });
+      await git(["worktree", "prune"], repoRoot);
+    } catch {}
+  }
+}
+
 export async function listBranches(dir: string): Promise<string[]> {
   try {
     if (!(await isGitRepo(dir))) return [];
@@ -114,7 +126,7 @@ export async function listBranches(dir: string): Promise<string[]> {
     return stdout
       .split("\n")
       .map((b) => b.trim())
-      .filter((b) => b && b !== currentBranch);
+      .filter((b) => b && b !== currentBranch && !b.startsWith("colmena/"));
   } catch {
     return [];
   }
@@ -144,45 +156,29 @@ export async function setupWorktree(
 
     const repoRoot = await getRepoRoot(workingDir);
     const baseBranch = (await getCurrentBranch(workingDir)) || "main";
-
     const branchName = existingBranch || sanitizeBranchName(path.basename(workingDir), sessionId);
     const safeName = branchName.replace(/\//g, "-");
     const worktreePath = path.join(repoRoot, WORKTREE_DIR, safeName);
 
     await fs.mkdir(path.join(repoRoot, WORKTREE_DIR), { recursive: true });
     if (existingBranch) {
-      await git(["worktree", "add", worktreePath, existingBranch], repoRoot);
+      await removeStaleWorktree(repoRoot, worktreePath);
+      await git(["worktree", "add", "--force", worktreePath, existingBranch], repoRoot);
     } else {
       await git(["worktree", "add", "-b", branchName, worktreePath, baseBranch], repoRoot);
     }
     await addToGitExclude(repoRoot);
 
-    return { success: true, worktreePath, branchName, baseBranch, repoRoot };
+    return {
+      success: true,
+      worktreePath,
+      branchName,
+      baseBranch,
+      repoRoot,
+      isExistingBranch: !!existingBranch,
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { ...empty, error: message };
   }
-}
-
-export async function cleanupWorktree(
-  repoRoot: string,
-  worktreePath: string,
-  branchName: string,
-): Promise<void> {
-  try {
-    await git(["worktree", "remove", worktreePath, "--force"], repoRoot);
-  } catch {
-    try {
-      await fs.rm(worktreePath, { recursive: true, force: true });
-      await git(["worktree", "prune"], repoRoot);
-    } catch {}
-  }
-  try {
-    await git(["branch", "-D", branchName], repoRoot);
-  } catch {}
-  try {
-    const wtDir = path.join(repoRoot, WORKTREE_DIR);
-    const entries = await fs.readdir(wtDir);
-    if (entries.length === 0) await fs.rmdir(wtDir);
-  } catch {}
 }

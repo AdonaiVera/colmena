@@ -5,9 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { FolderPicker } from "./FolderPicker";
-import { BranchPicker } from "./BranchPicker";
-import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-styles";
+import { BranchPicker, NEW_BRANCH_VALUE } from "./BranchPicker";
 import { getBaseName } from "../lib/utils";
+import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-styles";
 import type { ClaudeMode, ClaudeModel } from "../../shared/types";
 import { CLAUDE_MODES, CLAUDE_MODELS } from "../../shared/types";
 
@@ -56,7 +56,7 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
   const [model, setModel] = useState<ClaudeModel>("default");
   const [workingDir, setWorkingDir] = useState("");
   const [branches, setBranches] = useState<string[]>([]);
-  const [selectedBranch, setSelectedBranch] = useState("__new__");
+  const [selectedBranch, setSelectedBranch] = useState(NEW_BRANCH_VALUE);
 
   useEffect(() => {
     if (open) {
@@ -64,26 +64,31 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
       setModel("default");
       setWorkingDir("");
       setBranches([]);
-      setSelectedBranch("__new__");
+      setSelectedBranch(NEW_BRANCH_VALUE);
     }
   }, [open]);
 
   useEffect(() => {
-    if (!workingDir || mode !== "new") {
+    if (!workingDir) {
       setBranches([]);
-      setSelectedBranch("__new__");
+      setSelectedBranch(NEW_BRANCH_VALUE);
       return;
     }
-    window.colmena.git.listBranches(workingDir).then(setBranches);
-  }, [workingDir, mode]);
+    let stale = false;
+    window.colmena.git.listBranches(workingDir).then((result) => {
+      if (!stale) {
+        setBranches(result);
+        setSelectedBranch(NEW_BRANCH_VALUE);
+      }
+    });
+    return () => {
+      stale = true;
+    };
+  }, [workingDir]);
 
   const handleSubmit = useCallback(() => {
-    onConfirm({
-      workingDir,
-      mode,
-      model,
-      existingBranch: selectedBranch !== "__new__" ? selectedBranch : undefined,
-    });
+    const existingBranch = selectedBranch !== NEW_BRANCH_VALUE ? selectedBranch : undefined;
+    onConfirm({ workingDir, mode, model, existingBranch });
   }, [workingDir, mode, model, selectedBranch, onConfirm]);
 
   const handleBrowse = useCallback(async () => {
@@ -104,14 +109,6 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
         </div>
 
         <FolderPicker workingDir={workingDir} folderName={folderName} onBrowse={handleBrowse} />
-
-        {mode === "new" && (
-          <BranchPicker
-            branches={branches}
-            selectedBranch={selectedBranch}
-            onBranchChange={setSelectedBranch}
-          />
-        )}
 
         <div style={{ padding: "0 28px 20px", display: "flex", gap: 16 }}>
           <div style={{ flex: 1 }}>
@@ -145,6 +142,14 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
             </Select>
           </div>
         </div>
+
+        {mode === "new" && (
+          <BranchPicker
+            branches={branches}
+            selectedBranch={selectedBranch}
+            onSelectBranch={setSelectedBranch}
+          />
+        )}
 
         <DialogFooter
           style={{ padding: "16px 28px", borderTop: "1px solid var(--surface-hover)", gap: 10 }}

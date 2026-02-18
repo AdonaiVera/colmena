@@ -63,8 +63,16 @@ const api = {
       repoRoot: string,
       worktreePath: string,
       branchName: string,
+      isExistingBranch?: boolean,
     ): Promise<void> =>
-      ipcRenderer.invoke("git:cleanup", sessionId, repoRoot, worktreePath, branchName),
+      ipcRenderer.invoke(
+        "git:cleanup",
+        sessionId,
+        repoRoot,
+        worktreePath,
+        branchName,
+        isExistingBranch,
+      ),
     getInfo: (workingDir: string): Promise<GitInfoResult> =>
       ipcRenderer.invoke("git:getInfo", workingDir),
     getBranch: (workingDir: string): Promise<string | null> =>
