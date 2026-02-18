@@ -20,7 +20,7 @@ const sessions = new Map<string, PtySession>();
 
 let cachedShellPath: string | null = null;
 
-function getLoginShellPath(): string {
+export function getLoginShellPath(): string {
   if (cachedShellPath) return cachedShellPath;
   if (process.platform === "win32") return process.env.PATH || "";
 

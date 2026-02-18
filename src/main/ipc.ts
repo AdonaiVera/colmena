@@ -4,6 +4,7 @@ import { createSession, writeToSession, resizeSession, destroySession } from "./
 import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled } from "./store";
 import { setupWorktree, cleanupWorktree, getCurrentBranch, getGitInfo } from "./git-manager";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
+import { startEvaluation, abortEvaluation } from "./evaluator";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
@@ -103,4 +104,12 @@ export function registerIpcHandlers(window: BrowserWindow): void {
       return writeFileContent(worktreePath, filePath, content);
     },
   );
+
+  ipcMain.handle("evaluator:start", async (_event, sessionCwd: string, baseBranch?: string) => {
+    return startEvaluation(window, sessionCwd, baseBranch);
+  });
+
+  ipcMain.on("evaluator:abort", () => {
+    abortEvaluation();
+  });
 }

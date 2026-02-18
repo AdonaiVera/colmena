@@ -4,6 +4,7 @@ import { Terminal } from "./Terminal";
 import { SplitDivider } from "./SplitDivider";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { DiffPanel } from "./DiffPanel";
+import { EvaluatorPanel } from "./EvaluatorPanel";
 import type { Session } from "../../shared/types";
 
 interface TerminalAreaProps {
@@ -15,6 +16,10 @@ interface TerminalAreaProps {
   activeBranch?: string;
   activeSessionName?: string;
   onCloseDiffPanel: () => void;
+  evaluatorPanelOpen: boolean;
+  evaluatorSessionCwd?: string;
+  evaluatorBaseBranch?: string;
+  onCloseEvaluatorPanel: () => void;
   onStatusChange: (sessionId: string, status: "running" | "exited") => void;
   onNewTab: () => void;
   splitOpen: boolean;
@@ -32,6 +37,10 @@ export function TerminalArea({
   activeBranch,
   activeSessionName,
   onCloseDiffPanel,
+  evaluatorPanelOpen,
+  evaluatorSessionCwd,
+  evaluatorBaseBranch,
+  onCloseEvaluatorPanel,
   onStatusChange,
   onNewTab,
   splitOpen,
@@ -95,6 +104,17 @@ export function TerminalArea({
             worktreePath={diffPath}
             baseBranch={activeBranch}
             sessionName={activeSessionName || ""}
+          />
+        )}
+
+        {evaluatorSessionCwd && (
+          <EvaluatorPanel
+            open={evaluatorPanelOpen}
+            onClose={onCloseEvaluatorPanel}
+            sessionCwd={evaluatorSessionCwd}
+            baseBranch={evaluatorBaseBranch}
+            sessionName={activeSessionName || ""}
+            activeSessionId={activeSessionId}
           />
         )}
       </div>
