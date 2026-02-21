@@ -6,6 +6,7 @@ import { setupWorktree, getCurrentBranch, getGitInfo, listBranches } from "./git
 import { cleanupWorktree } from "./git-cleanup";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import { startEvaluation, abortEvaluation } from "./evaluator";
+import { registerEvalIpcHandlers } from "./eval-ipc";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
@@ -121,4 +122,6 @@ export function registerIpcHandlers(window: BrowserWindow): void {
   ipcMain.on("evaluator:abort", () => {
     abortEvaluation();
   });
+
+  registerEvalIpcHandlers(window);
 }
