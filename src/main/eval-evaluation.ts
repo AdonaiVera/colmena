@@ -15,6 +15,12 @@ import type {
 
 let activeProcess: ChildProcess | null = null;
 
+function resolveComponentId(compId: string, components: DiscoveredComponent[]): string {
+  if (components.find((c) => c.id === compId)) return compId;
+  const lower = compId.trim().toLowerCase();
+  return components.find((c) => c.name.toLowerCase() === lower)?.id || compId;
+}
+
 function programmaticPass(
   scenarios: EvalScenario[],
   runs: ExecutionRun[],
@@ -22,7 +28,10 @@ function programmaticPass(
 ): ComponentMetrics[] {
   const metricsMap = new Map<string, ComponentMetrics>();
 
-  const evaluatedCompIds = new Set(scenarios.filter((s) => s.enabled).map((s) => s.componentId));
+  const enabledScenarios = scenarios.filter((s) => s.enabled);
+  const evaluatedCompIds = new Set(
+    enabledScenarios.map((s) => resolveComponentId(s.componentId, components)),
+  );
   for (const comp of components) {
     if (!evaluatedCompIds.has(comp.id)) continue;
     metricsMap.set(comp.id, {
@@ -31,22 +40,26 @@ function programmaticPass(
     });
   }
 
-  for (const scenario of scenarios) {
-    if (!scenario.enabled) continue;
+  for (const scenario of enabledScenarios) {
     const withRun = runs.find((r) => r.scenarioId === scenario.id && r.variant === "with_tools");
-    const withTools = withRun?.toolInvocations.length || 0;
-
+    const targetTools = new Set((scenario.componentToolNames || []).map((t) => t.toLowerCase()));
+    const skillName = (scenario.componentName || "").replace(/^\//, "").toLowerCase();
+    const usedTarget = (withRun?.toolInvocations || []).some((inv) => {
+      if (targetTools.has(inv.toolName.toLowerCase())) return true;
+      return inv.toolName === "Skill" && skillName && inv.input.toLowerCase().includes(skillName);
+    });
     const result: ScenarioResult = {
       scenarioId: scenario.id, withToolsScore: 0, withoutToolsScore: 0, toolLift: 0,
-      correctToolUsed: withTools > 0 && scenario.type !== "negative",
+      correctToolUsed: usedTarget && scenario.type !== "negative",
       taskCompleted: withRun?.status === "completed",
     };
 
-    const metrics = metricsMap.get(scenario.componentId);
+    const resolvedId = resolveComponentId(scenario.componentId, components);
+    const metrics = metricsMap.get(resolvedId);
     if (metrics) {
-      if (scenario.type === "negative" && withTools > 0) metrics.falsePositives++;
-      if (scenario.type !== "negative" && withTools === 0) metrics.falseNegatives++;
-      if (withTools > 0) metrics.triggerRate++;
+      if (scenario.type === "negative" && usedTarget) metrics.falsePositives++;
+      if (scenario.type !== "negative" && !usedTarget) metrics.falseNegatives++;
+      if (usedTarget) metrics.triggerRate++;
       metrics.scenarioResults.push(result);
     }
   }
@@ -81,8 +94,7 @@ function buildJudgePrompt(
 }
 
 function applyScores(
-  scenarios: EvalScenario[],
-  metrics: ComponentMetrics[],
+  scenarios: EvalScenario[], metrics: ComponentMetrics[],
   scores: Array<{ withToolsScore: number; withoutToolsScore: number }>,
 ): void {
   const enabled = scenarios.filter((s) => s.enabled);
@@ -104,11 +116,8 @@ function applyScores(
 }
 
 async function llmJudgePass(
-  window: BrowserWindow,
-  scenarios: EvalScenario[],
-  runs: ExecutionRun[],
-  experimentId: string,
-  metrics: ComponentMetrics[],
+  window: BrowserWindow, scenarios: EvalScenario[], runs: ExecutionRun[],
+  experimentId: string, metrics: ComponentMetrics[],
 ): Promise<ComponentMetrics[]> {
   const prompt = buildJudgePrompt(scenarios, runs, experimentId);
   const env = { ...process.env, PATH: getLoginShellPath() };
@@ -149,14 +158,10 @@ async function llmJudgePass(
 }
 
 export async function runEvaluation(
-  window: BrowserWindow,
-  experimentId: string,
-  scenarios: EvalScenario[],
-  runs: ExecutionRun[],
-  components: DiscoveredComponent[],
+  window: BrowserWindow, experimentId: string,
+  scenarios: EvalScenario[], runs: ExecutionRun[], components: DiscoveredComponent[],
 ): Promise<{ report: EvalReport | null }> {
   abortEvaluation();
-
   if (runs.length === 0) return { report: null };
 
   let metrics = programmaticPass(scenarios, runs, components);

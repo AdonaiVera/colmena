@@ -12,6 +12,9 @@
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-333?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/license-Apache%202.0-f59e0b?style=flat-square" alt="License">
   <img src="https://img.shields.io/badge/electron-30-47848f?style=flat-square" alt="Electron">
+  <a href="https://github.com/AdonaiVera/colmena/releases/latest">
+    <img src="https://img.shields.io/badge/download-macOS%20DMG-f59e0b?style=flat-square&logo=apple&logoColor=white" alt="Download DMG">
+  </a>
 </p>
 
 ---

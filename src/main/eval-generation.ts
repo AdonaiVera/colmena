@@ -58,7 +58,12 @@ function parseScenarios(
     return raw
       .filter((r) => r.prompt && r.type)
       .map((r) => {
-        const comp = components.find((c) => c.name === r.componentId);
+        const cid = (r.componentId || "").trim().toLowerCase();
+        const comp = components.find(
+          (c) => c.name === r.componentId
+            || c.name.toLowerCase() === cid
+            || c.id === r.componentId,
+        );
         return {
           id: crypto.randomUUID(),
           componentId: comp?.id || r.componentId,

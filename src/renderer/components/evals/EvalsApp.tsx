@@ -7,6 +7,7 @@ import { EvalsTimeline } from "./EvalsTimeline";
 import { EvalsWelcome } from "./EvalsWelcome";
 import { NewExperimentDialog } from "./NewExperimentDialog";
 import { RerunConfirmDialog } from "./RerunConfirmDialog";
+import { DeleteExperimentDialog } from "./DeleteExperimentDialog";
 import { AnalysisStep } from "./AnalysisStep";
 import { GenerationStep } from "./GenerationStep";
 import { ExecutionStep } from "./ExecutionStep";
@@ -21,6 +22,7 @@ export function EvalsApp({ onBack }: EvalsAppProps) {
   const store = useExperimentStore();
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [pendingRerunStep, setPendingRerunStep] = useState<EvalStepId | null>(null);
+  const [deletingExperimentId, setDeletingExperimentId] = useState<string | null>(null);
 
   const evalStep = useEvalStep({ experiment: store.activeExperiment, store });
 
@@ -73,7 +75,7 @@ export function EvalsApp({ onBack }: EvalsAppProps) {
         activeExperimentId={store.activeExperimentId}
         onSelectExperiment={store.setActiveExperiment}
         onNewExperiment={() => setShowNewDialog(true)}
-        onDeleteExperiment={store.deleteExperiment}
+        onDeleteExperiment={setDeletingExperimentId}
         onBack={onBack}
       />
 
@@ -117,6 +119,18 @@ export function EvalsApp({ onBack }: EvalsAppProps) {
         onConfirmRerun={handleConfirmRerun}
         onNavigateOnly={handleNavigateOnly}
         onCancel={() => setPendingRerunStep(null)}
+      />
+
+      <DeleteExperimentDialog
+        open={!!deletingExperimentId}
+        experimentName={
+          store.experiments.find((e) => e.id === deletingExperimentId)?.name || ""
+        }
+        onConfirm={() => {
+          if (deletingExperimentId) store.deleteExperiment(deletingExperimentId);
+          setDeletingExperimentId(null);
+        }}
+        onCancel={() => setDeletingExperimentId(null)}
       />
     </div>
   );

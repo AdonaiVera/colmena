@@ -70,8 +70,10 @@ export async function runPipeEval(
       turns++;
       let cmd = "claude -p --output-format stream-json --verbose --dangerously-skip-permissions";
       if (variant === "without_tools") {
-        const mcpTools = (scenario.componentToolNames || []).filter((t) => t.startsWith("mcp__"));
-        if (mcpTools.length > 0) cmd += ` --disallowedTools "${mcpTools.join(",")}"`;
+        const blocked = [...(scenario.componentToolNames || [])];
+        const skillName = (scenario.componentName || "").replace(/^\//, "");
+        if (skillName) blocked.push(`Skill(${skillName}*)`);
+        if (blocked.length > 0) cmd += ` --disallowedTools "${blocked.join(",")}"`;
       }
       if (sessionId) cmd += ` --resume "${sessionId}"`;
 

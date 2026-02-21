@@ -129,8 +129,11 @@ function parseComponentsFromJson(
 async function discoverMcpServers(workingDir: string): Promise<DiscoveredComponent[]> {
   const prompt =
     `List ALL MCP servers you have access to right now. ` +
-    `For each one, provide the server name and a short description of what it does.\n\n` +
-    `Return ONLY a JSON array like: [{"name":"server-name","description":"what it does","triggers":["tool1","tool2"]}]\n` +
+    `For each one, provide the server name, a short description, and the COMPLETE list of every tool it provides.\n\n` +
+    `IMPORTANT: The "triggers" field must contain EVERY tool from the server using the exact ` +
+    `"mcp__serverName__toolName" format (e.g. "mcp__plugin_context7_context7__query-docs"). ` +
+    `Do NOT omit any tools — list all of them so we can fully block/unblock the server during evaluation.\n\n` +
+    `Return ONLY a JSON array like: [{"name":"server-name","description":"what it does","triggers":["mcp__server__tool1","mcp__server__tool2"]}]\n` +
     `If there are no MCP servers, return an empty array [].\n` +
     `Return ONLY valid JSON, no other text.`;
 
