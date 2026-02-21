@@ -1,4 +1,4 @@
-import { Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
 
 import type { Session } from "../../shared/types";
 import { ColmenaLogo } from "./ColmenaLogo";
@@ -17,7 +17,23 @@ interface SidebarProps {
   onToggleCheatSheet: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  onBack?: () => void;
 }
+
+const footerBtn: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+  background: "none",
+  border: "none",
+  borderRadius: "var(--radius)",
+  color: "var(--text-muted)",
+  cursor: "pointer",
+  padding: "6px 8px",
+  fontSize: 12,
+  transition: "var(--transition)",
+};
 
 export function Sidebar({
   sessions,
@@ -30,6 +46,7 @@ export function Sidebar({
   onToggleCheatSheet,
   soundEnabled,
   onToggleSound,
+  onBack,
 }: SidebarProps) {
   return (
     <div
@@ -115,20 +132,7 @@ export function Sidebar({
         <button
           className="titlebar-no-drag"
           onClick={onToggleSound}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            width: "100%",
-            background: "none",
-            border: "none",
-            borderRadius: "var(--radius)",
-            color: soundEnabled ? "var(--accent)" : "var(--text-muted)",
-            cursor: "pointer",
-            padding: "6px 8px",
-            fontSize: 12,
-            transition: "var(--transition)",
-          }}
+          style={{ ...footerBtn, color: soundEnabled ? "var(--accent)" : "var(--text-muted)" }}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
         >
@@ -147,20 +151,7 @@ export function Sidebar({
         <button
           className="titlebar-no-drag"
           onClick={onToggleCheatSheet}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            width: "100%",
-            background: "none",
-            border: "none",
-            borderRadius: "var(--radius)",
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            padding: "6px 8px",
-            fontSize: 12,
-            transition: "var(--transition)",
-          }}
+          style={footerBtn}
           onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
         >
@@ -179,6 +170,20 @@ export function Sidebar({
         </button>
       </div>
 
+      {onBack && (
+        <div style={{ padding: "0 12px 8px", borderTop: "1px solid var(--border)" }}>
+          <button
+            className="titlebar-no-drag"
+            onClick={onBack}
+            style={footerBtn}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Landing</span>
+          </button>
+        </div>
+      )}
       <CheatSheet open={showCheatSheet} onClose={onToggleCheatSheet} />
     </div>
   );

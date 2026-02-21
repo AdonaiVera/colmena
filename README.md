@@ -25,6 +25,8 @@ I created Colmena because I was looking for something open-source that I could m
 
 ## Features
 
+### Multi-Session Terminal
+
 - **Multi-tab sessions** — run several Claude Code agents at once
 - **Session modes** — start fresh, continue last conversation, or pick one to resume
 - **Model selection** — choose between Sonnet, Opus, or Haiku per tab
@@ -36,6 +38,17 @@ I created Colmena because I was looking for something open-source that I could m
 - **In-terminal search** — Cmd+F to find text in any session
 - **Activity indicators** — colored dots show when Claude is running, idle, or needs input
 - **Sound notifications** — bee buzz alert when Claude needs attention in a background tab
+
+### Pollen Test (Evals)
+
+Measure how much your tools, MCP servers, hooks, and slash commands improve Claude Code. Pollen Test runs a 4-step evaluation pipeline directly inside Colmena:
+
+1. **Analysis** — discovers hooks, MCP servers, skills, and slash commands in your workspace
+2. **Generation** — creates test scenarios per component (direct, paraphrased, edge case, negative)
+3. **Execution** — runs each scenario twice: with tools enabled and without (baseline)
+4. **Report** — scores runs with an LLM judge, computes trigger rate, accuracy, tool lift, and per-component metrics
+
+Each execution spawns real `claude -p` sessions with a simulated user persona that drives multi-turn conversations. Results include token usage, cost breakdowns, and exportable reports (JSON / Markdown).
 
 ## Quick Start
 

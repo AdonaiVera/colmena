@@ -8,6 +8,14 @@ import type {
   GitDiffFile,
   ActivityState,
 } from "../shared/types";
+import type {
+  Experiment,
+  DiscoveredComponent,
+  EvalScenario,
+  ExecutionRun,
+  ExecutionMode,
+  EvalReport,
+} from "../shared/eval-types";
 
 const api = {
   pty: {
@@ -104,6 +112,72 @@ const api = {
       const handler = (_event: Electron.IpcRendererEvent, error: string | null) => callback(error);
       ipcRenderer.on("evaluator:done", handler);
       return () => ipcRenderer.removeListener("evaluator:done", handler);
+    },
+  },
+  eval: {
+    listExperiments: (): Promise<Experiment[]> =>
+      ipcRenderer.invoke("eval:listExperiments"),
+    saveExperiment: (experiment: Experiment): Promise<void> =>
+      ipcRenderer.invoke("eval:saveExperiment", experiment),
+    deleteExperiment: (experimentId: string, workingDir?: string): Promise<void> =>
+      ipcRenderer.invoke("eval:deleteExperiment", experimentId, workingDir),
+    analysisStart: (workingDir: string): Promise<{ components: DiscoveredComponent[] }> =>
+      ipcRenderer.invoke("eval:analysis:start", workingDir),
+    generationStart: (
+      components: DiscoveredComponent[],
+      workingDir: string,
+    ): Promise<{ scenarios: EvalScenario[] }> =>
+      ipcRenderer.invoke("eval:generation:start", components, workingDir),
+    executionStart: (
+      scenarios: EvalScenario[],
+      workingDir: string,
+      experimentId: string,
+      mode: ExecutionMode,
+    ): Promise<{ runs: ExecutionRun[] }> =>
+      ipcRenderer.invoke("eval:execution:start", scenarios, workingDir, experimentId, mode),
+    evaluationStart: (
+      experimentId: string,
+      scenarios: EvalScenario[],
+      runs: ExecutionRun[],
+      components: DiscoveredComponent[],
+    ): Promise<{ report: EvalReport | null }> =>
+      ipcRenderer.invoke("eval:evaluation:start", experimentId, scenarios, runs, components),
+    abort: () => ipcRenderer.send("eval:abort"),
+    openLogsFolder: (experimentId: string): Promise<void> =>
+      ipcRenderer.invoke("eval:openLogsFolder", experimentId),
+    onGenerationData: (callback: (chunk: string) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, chunk: string) => callback(chunk);
+      ipcRenderer.on("eval:generation:data", handler);
+      return () => ipcRenderer.removeListener("eval:generation:data", handler);
+    },
+    onExecutionRunStarted: (
+      callback: (runId: string, scenarioId: string, variant: string) => void,
+    ) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        runId: string,
+        scenarioId: string,
+        variant: string,
+      ) => callback(runId, scenarioId, variant);
+      ipcRenderer.on("eval:execution:runStarted", handler);
+      return () => ipcRenderer.removeListener("eval:execution:runStarted", handler);
+    },
+    onExecutionRunStatus: (
+      callback: (runId: string, status: string, transcript: string) => void,
+    ) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        runId: string,
+        status: string,
+        transcript: string,
+      ) => callback(runId, status, transcript);
+      ipcRenderer.on("eval:execution:runStatus", handler);
+      return () => ipcRenderer.removeListener("eval:execution:runStatus", handler);
+    },
+    onEvaluationData: (callback: (chunk: string) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, chunk: string) => callback(chunk);
+      ipcRenderer.on("eval:evaluation:data", handler);
+      return () => ipcRenderer.removeListener("eval:evaluation:data", handler);
     },
   },
 };
