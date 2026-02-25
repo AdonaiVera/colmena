@@ -15,7 +15,12 @@ interface SidebarProps {
   onNewSession: () => void;
   onCloseSession: (id: string) => void;
   onRenameSession: (id: string, name: string) => void;
-  onMoveSession: (sessionId: string, targetId: string | null, position: "before" | "after", group: string) => void;
+  onMoveSession: (
+    sessionId: string,
+    targetId: string | null,
+    position: "before" | "after",
+    group: string,
+  ) => void;
   showCheatSheet: boolean;
   onToggleCheatSheet: () => void;
   groups: Group[];
@@ -53,6 +58,12 @@ export function Sidebar({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
+
+  const groupIds = new Set(groups.map((g) => g.id));
+  const ungroupedSessions = sessions.filter((s) => {
+    const gid = s.group ?? "focus";
+    return !groupIds.has(gid);
+  });
 
   const handleDragStart = useCallback((sessionId: string) => setDraggedId(sessionId), []);
   const handleDragOver = useCallback((target: DropTarget) => setDropTarget(target), []);
@@ -143,6 +154,26 @@ export function Sidebar({
             onDragEnd={handleDragEnd}
           />
         ))}
+        {ungroupedSessions.length > 0 && (
+          <GroupSection
+            key="__ungrouped"
+            id="__ungrouped"
+            label="Ungrouped"
+            sessions={ungroupedSessions}
+            collapsed={!!collapsed["__ungrouped"]}
+            activeSessionId={activeSessionId}
+            onToggle={() => toggleGroup("__ungrouped")}
+            onSelectSession={onSelectSession}
+            onCloseSession={onCloseSession}
+            onRenameSession={onRenameSession}
+            draggedId={draggedId}
+            dropTarget={dropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+          />
+        )}
       </div>
 
       <div style={{ padding: "8px 12px", borderTop: "1px solid var(--border)" }}>
@@ -155,7 +186,14 @@ export function Sidebar({
         >
           <span style={{ fontSize: 14 }}>?</span>
           <span>Shortcuts</span>
-          <span style={{ marginLeft: "auto", fontSize: 10, opacity: 0.6, fontFamily: "var(--font-mono)" }}>
+          <span
+            style={{
+              marginLeft: "auto",
+              fontSize: 10,
+              opacity: 0.6,
+              fontFamily: "var(--font-mono)",
+            }}
+          >
             {MOD_KEY}+?
           </span>
         </button>

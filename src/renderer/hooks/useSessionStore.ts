@@ -88,9 +88,7 @@ export function useSessionStore() {
               if (!name) return;
               setState((prev) => ({
                 ...prev,
-                sessions: prev.sessions.map((s) =>
-                  s.id === tab.id ? { ...s, name } : s,
-                ),
+                sessions: prev.sessions.map((s) => (s.id === tab.id ? { ...s, name } : s)),
               }));
             });
         }
@@ -107,7 +105,9 @@ export function useSessionStore() {
         ),
       }));
     });
-    return () => { off(); };
+    return () => {
+      off();
+    };
   }, []);
 
   const createSession = useCallback(
@@ -116,6 +116,7 @@ export function useSessionStore() {
       workingDir: string,
       mode: ClaudeMode,
       model: ClaudeModel,
+      group: string,
       gitResult?: GitSetupResult,
       gitInfo?: GitInfoResult,
     ): Session => {
@@ -125,6 +126,7 @@ export function useSessionStore() {
       const session: Session = {
         id: sessionId,
         name: "",
+        group,
         workingDir: effectiveDir,
         command,
         mode,

@@ -54,6 +54,7 @@ export function TerminalMode() {
       workingDir: string;
       mode: ClaudeMode;
       model: ClaudeModel;
+      group: string;
       existingBranch?: string;
     }) => {
       setSessionLoading(true);
@@ -69,7 +70,15 @@ export function TerminalMode() {
       } else {
         gitInfo = await window.colmena.git.getInfo(config.workingDir);
       }
-      createSession(sessionId, config.workingDir, config.mode, config.model, gitResult, gitInfo);
+      createSession(
+        sessionId,
+        config.workingDir,
+        config.mode,
+        config.model,
+        config.group,
+        gitResult,
+        gitInfo,
+      );
       setShowNewDialog(false);
       setSessionLoading(false);
     },
@@ -202,6 +211,7 @@ export function TerminalMode() {
       <NewSessionDialog
         open={showNewDialog}
         loading={sessionLoading}
+        groups={groups}
         onConfirm={handleConfirmNewSession}
         onCancel={() => setShowNewDialog(false)}
       />

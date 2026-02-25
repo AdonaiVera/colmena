@@ -8,19 +8,21 @@ import { FolderPicker } from "./FolderPicker";
 import { BranchPicker, NEW_BRANCH_VALUE } from "./BranchPicker";
 import { getBaseName } from "../lib/utils";
 import { triggerStyle, dropdownStyle, labelStyle, itemStyle } from "./dialog-styles";
-import type { ClaudeMode, ClaudeModel } from "../../shared/types";
+import type { ClaudeMode, ClaudeModel, Group } from "../../shared/types";
 import { CLAUDE_MODES, CLAUDE_MODELS } from "../../shared/types";
 
 interface NewTabConfig {
   workingDir: string;
   mode: ClaudeMode;
   model: ClaudeModel;
+  group: string;
   existingBranch?: string;
 }
 
 interface NewSessionDialogProps {
   open: boolean;
   loading?: boolean;
+  groups: Group[];
   onConfirm: (config: NewTabConfig) => void;
   onCancel: () => void;
 }
@@ -51,9 +53,16 @@ const submitBtnBase: React.CSSProperties = {
   padding: "0 20px",
 };
 
-export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSessionDialogProps) {
+export function NewSessionDialog({
+  open,
+  loading,
+  groups,
+  onConfirm,
+  onCancel,
+}: NewSessionDialogProps) {
   const [mode, setMode] = useState<ClaudeMode>("new");
   const [model, setModel] = useState<ClaudeModel>("default");
+  const [group, setGroup] = useState(groups[0]?.id ?? "focus");
   const [workingDir, setWorkingDir] = useState("");
   const [branches, setBranches] = useState<string[]>([]);
   const [selectedBranch, setSelectedBranch] = useState(NEW_BRANCH_VALUE);
@@ -62,11 +71,12 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
     if (open) {
       setMode("new");
       setModel("default");
+      setGroup(groups[0]?.id ?? "focus");
       setWorkingDir("");
       setBranches([]);
       setSelectedBranch(NEW_BRANCH_VALUE);
     }
-  }, [open]);
+  }, [open, groups]);
 
   useEffect(() => {
     if (!workingDir) {
@@ -88,8 +98,8 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
 
   const handleSubmit = useCallback(() => {
     const existingBranch = selectedBranch !== NEW_BRANCH_VALUE ? selectedBranch : undefined;
-    onConfirm({ workingDir, mode, model, existingBranch });
-  }, [workingDir, mode, model, selectedBranch, onConfirm]);
+    onConfirm({ workingDir, mode, model, group, existingBranch });
+  }, [workingDir, mode, model, group, selectedBranch, onConfirm]);
 
   const handleBrowse = useCallback(async () => {
     const folder = await window.colmena.dialog.openFolder();
@@ -141,6 +151,22 @@ export function NewSessionDialog({ open, loading, onConfirm, onCancel }: NewSess
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div style={{ padding: "0 28px 20px" }}>
+          <Label style={labelStyle}>Group</Label>
+          <Select value={group} onValueChange={setGroup}>
+            <SelectTrigger style={triggerStyle}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent style={{ ...dropdownStyle, minWidth: 180 }}>
+              {groups.map((g) => (
+                <SelectItem key={g.id} value={g.id} style={itemStyle}>
+                  <span style={{ color: "var(--text)" }}>{g.label}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {mode === "new" && (
