@@ -99,6 +99,27 @@ const api = {
     writeFile: (worktreePath: string, filePath: string, content: string): Promise<boolean> =>
       ipcRenderer.invoke("git:writeFile", worktreePath, filePath, content),
   },
+  session: {
+    onSyncName: (
+      callback: (colmenaId: string, claudeSessionId: string, name: string) => void,
+    ) => {
+      const handler = (
+        _event: Electron.IpcRendererEvent,
+        colmenaId: string,
+        claudeSessionId: string,
+        name: string,
+      ) => callback(colmenaId, claudeSessionId, name);
+      ipcRenderer.on("session:syncName", handler);
+      return () => ipcRenderer.removeListener("session:syncName", handler);
+    },
+    getClaudeSessionName: (
+      workingDir: string,
+      claudeSessionId: string,
+    ): Promise<string | null> =>
+      ipcRenderer.invoke("session:getClaudeSessionName", workingDir, claudeSessionId),
+    setClaudeSessionName: (workingDir: string, claudeSessionId: string, name: string): void =>
+      ipcRenderer.send("session:setClaudeSessionName", workingDir, claudeSessionId, name),
+  },
   evaluator: {
     start: (cwd: string, baseBranch?: string): Promise<{ error?: string }> =>
       ipcRenderer.invoke("evaluator:start", cwd, baseBranch),

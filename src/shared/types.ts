@@ -47,6 +47,8 @@ export interface Session {
   repoRoot?: string;
   isExistingBranch?: boolean;
   createdAt: number;
+  claudeSessionId?: string;
+  userSetName?: boolean;
 }
 
 export interface PersistedTab {
@@ -60,6 +62,8 @@ export interface PersistedTab {
   baseBranch?: string;
   repoRoot?: string;
   isExistingBranch?: boolean;
+  claudeSessionId?: string;
+  userSetName?: boolean;
 }
 
 export interface PtyCreateOptions {
@@ -141,6 +145,9 @@ export interface IpcChannels {
     baseBranch: string,
   ) => Promise<boolean>;
   "git:writeFile": (worktreePath: string, filePath: string, content: string) => Promise<boolean>;
+  "session:syncName": (colmenaId: string, claudeSessionId: string, name: string) => void;
+  "session:getClaudeSessionName": (workingDir: string, claudeSessionId: string) => Promise<string | null>;
+  "session:setClaudeSessionName": (workingDir: string, claudeSessionId: string, name: string) => void;
   "settings:getSoundEnabled": () => Promise<boolean>;
   "settings:setSoundEnabled": (enabled: boolean) => void;
   "evaluator:start": (sessionCwd: string, baseBranch?: string) => Promise<{ error?: string }>;

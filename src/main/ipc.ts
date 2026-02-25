@@ -7,6 +7,7 @@ import { cleanupWorktree } from "./git-cleanup";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import { startEvaluation, abortEvaluation } from "./evaluator";
 import { registerEvalIpcHandlers } from "./eval-ipc";
+import { readCustomTitle, writeCustomTitle } from "./claude-sessions";
 import type { PtyCreateOptions, PersistedTab } from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
@@ -33,6 +34,20 @@ export function registerIpcHandlers(window: BrowserWindow): void {
   ipcMain.handle("store:loadTabs", () => {
     return loadTabs();
   });
+
+  ipcMain.handle(
+    "session:getClaudeSessionName",
+    (_event, workingDir: string, claudeSessionId: string) => {
+      return readCustomTitle(workingDir, claudeSessionId);
+    },
+  );
+
+  ipcMain.on(
+    "session:setClaudeSessionName",
+    (_event, workingDir: string, claudeSessionId: string, name: string) => {
+      writeCustomTitle(workingDir, claudeSessionId, name);
+    },
+  );
 
   ipcMain.handle("settings:getSoundEnabled", () => {
     return getSoundEnabled();
