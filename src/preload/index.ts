@@ -7,6 +7,7 @@ import type {
   GitInfoResult,
   GitDiffFile,
   ActivityState,
+  Group,
 } from "../shared/types";
 
 const api = {
@@ -90,6 +91,10 @@ const api = {
       ipcRenderer.invoke("git:revertHunk", worktreePath, filePath, hunkIndex, baseBranch),
     writeFile: (worktreePath: string, filePath: string, content: string): Promise<boolean> =>
       ipcRenderer.invoke("git:writeFile", worktreePath, filePath, content),
+  },
+  groups: {
+    load: (): Promise<Group[]> => ipcRenderer.invoke("groups:load"),
+    save: (groups: Group[]) => ipcRenderer.send("groups:save", groups),
   },
   session: {
     onSyncName: (

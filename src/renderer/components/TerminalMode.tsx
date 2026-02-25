@@ -7,18 +7,16 @@ import { useGitBranch } from "../hooks/useGitBranch";
 import { useSplitTerminal } from "../hooks/useSplitTerminal";
 import { useActivityDetection } from "../hooks/useActivityDetection";
 import { useNotifications } from "../hooks/useNotifications";
+import { useGroups } from "../hooks/useGroups";
 import { Sidebar } from "./Sidebar";
 import { TitleBar } from "./TitleBar";
 import { NewSessionDialog } from "./NewSessionDialog";
 import { CloseSessionDialog } from "./CloseSessionDialog";
+import { SettingsPanel } from "./SettingsPanel";
 import { TerminalArea } from "./TerminalArea";
 import type { ClaudeMode, ClaudeModel } from "../../shared/types";
 
-interface TerminalModeProps {
-  onBack: () => void;
-}
-
-export function TerminalMode({ onBack }: TerminalModeProps) {
+export function TerminalMode() {
   const {
     sessions,
     activeSessionId,
@@ -26,12 +24,17 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
     createSession,
     removeSession,
     renameSession,
+    moveSession,
     updateSession,
     setActiveSession,
+    moveSessionsToGroup,
   } = useSessionStore();
+
+  const { groups, addGroup, renameGroup, removeGroup } = useGroups();
 
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [diffPanelOpen, setDiffPanelOpen] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(false);
   const [closingSessionId, setClosingSessionId] = useState<string | null>(null);
@@ -112,6 +115,14 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
     [updateSession],
   );
 
+  const handleRemoveGroup = useCallback(
+    (groupId: string, targetId: string) => {
+      if (targetId) moveSessionsToGroup(groupId, targetId);
+      removeGroup(groupId);
+    },
+    [moveSessionsToGroup, removeGroup],
+  );
+
   useKeyboardShortcuts({
     sessions,
     activeSessionId,
@@ -146,11 +157,11 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
         onNewSession={() => setShowNewDialog(true)}
         onCloseSession={handleRequestClose}
         onRenameSession={handleRenameSession}
+        onMoveSession={moveSession}
         showCheatSheet={showCheatSheet}
         onToggleCheatSheet={toggleCheatSheet}
-        soundEnabled={soundEnabled}
-        onToggleSound={() => toggleSound(!soundEnabled)}
-        onBack={onBack}
+        groups={groups}
+        onManageGroups={() => setShowSettings(true)}
       />
 
       <div
@@ -200,6 +211,18 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
         sessionName={closingSession?.name || "Session"}
         onConfirm={handleConfirmClose}
         onCancel={() => setClosingSessionId(null)}
+      />
+
+      <SettingsPanel
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        groups={groups}
+        sessions={sessions}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => toggleSound(!soundEnabled)}
+        onAddGroup={addGroup}
+        onRenameGroup={renameGroup}
+        onRemoveGroup={handleRemoveGroup}
       />
     </div>
   );

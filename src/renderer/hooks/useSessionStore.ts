@@ -27,6 +27,7 @@ function toPersistedTabs(sessions: Session[]): PersistedTab[] {
   return sessions.map((s) => ({
     id: s.id,
     name: s.name,
+    group: s.group,
     workingDir: s.workingDir,
     command: s.command,
     mode: s.mode,
@@ -62,6 +63,7 @@ export function useSessionStore() {
       const sessions: Session[] = tabs.map((tab, i) => ({
         id: tab.id,
         name: tab.name || `Tab ${i + 1}`,
+        group: tab.group,
         workingDir: tab.workingDir,
         command: tab.command,
         mode: tab.mode || "new",
@@ -101,7 +103,7 @@ export function useSessionStore() {
       setState((prev) => ({
         ...prev,
         sessions: prev.sessions.map((s) =>
-          s.id === colmenaId && !s.userSetName ? { ...s, name, claudeSessionId } : s,
+          s.id === colmenaId ? { ...s, name, claudeSessionId } : s,
         ),
       }));
     });
@@ -192,6 +194,32 @@ export function useSessionStore() {
     }));
   }, []);
 
+  const moveSession = useCallback(
+    (sessionId: string, targetId: string | null, position: "before" | "after", group: string) => {
+      setState((prev) => {
+        const sessions = [...prev.sessions];
+        const fromIdx = sessions.findIndex((s) => s.id === sessionId);
+        if (fromIdx === -1) return prev;
+        const [session] = sessions.splice(fromIdx, 1);
+        const updated = { ...session, group };
+        if (targetId === null) {
+          sessions.push(updated);
+        } else {
+          const targetIdx = sessions.findIndex((s) => s.id === targetId);
+          if (targetIdx === -1) {
+            sessions.push(updated);
+          } else if (position === "before") {
+            sessions.splice(targetIdx, 0, updated);
+          } else {
+            sessions.splice(targetIdx + 1, 0, updated);
+          }
+        }
+        return { ...prev, sessions };
+      });
+    },
+    [],
+  );
+
   const updateSession = useCallback((sessionId: string, updates: Partial<Session>) => {
     setState((prev) => ({
       ...prev,
@@ -203,6 +231,15 @@ export function useSessionStore() {
     setState((prev) => ({ ...prev, activeSessionId: sessionId }));
   }, []);
 
+  const moveSessionsToGroup = useCallback((fromGroup: string, toGroup: string) => {
+    setState((prev) => ({
+      ...prev,
+      sessions: prev.sessions.map((s) =>
+        (s.group ?? "focus") === fromGroup ? { ...s, group: toGroup } : s,
+      ),
+    }));
+  }, []);
+
   return {
     sessions: state.sessions,
     activeSessionId: state.activeSessionId,
@@ -210,7 +247,9 @@ export function useSessionStore() {
     createSession,
     removeSession,
     renameSession,
+    moveSession,
     updateSession,
     setActiveSession,
+    moveSessionsToGroup,
   };
 }
