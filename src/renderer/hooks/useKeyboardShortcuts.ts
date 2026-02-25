@@ -10,7 +10,6 @@ interface UseKeyboardShortcutsOptions {
   onCloseTab: (id: string) => void;
   onToggleCheatSheet: () => void;
   onToggleDiffPanel: () => void;
-  onToggleEvaluatorPanel: () => void;
   onToggleSplitTerminal: () => void;
 }
 
@@ -22,7 +21,6 @@ export function useKeyboardShortcuts({
   onCloseTab,
   onToggleCheatSheet,
   onToggleDiffPanel,
-  onToggleEvaluatorPanel,
   onToggleSplitTerminal,
 }: UseKeyboardShortcutsOptions) {
   useEffect(() => {
@@ -77,12 +75,6 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      if (e.key === "e" && !e.shiftKey) {
-        e.preventDefault();
-        onToggleEvaluatorPanel();
-        return;
-      }
-
       if (e.key === "j" && !e.shiftKey) {
         e.preventDefault();
         onToggleSplitTerminal();
@@ -99,7 +91,6 @@ export function useKeyboardShortcuts({
     onCloseTab,
     onToggleCheatSheet,
     onToggleDiffPanel,
-    onToggleEvaluatorPanel,
     onToggleSplitTerminal,
   ]);
 }

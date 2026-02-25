@@ -24,7 +24,6 @@ export const SHORTCUTS: ShortcutDef[] = [
   { key: "1-9", meta: true, label: "Switch to tab N", group: "tabs" },
   { key: "F", meta: true, label: "Find in terminal", group: "terminal" },
   { key: "D", meta: true, label: "Toggle diff panel", group: "app" },
-  { key: "E", meta: true, label: "Toggle evaluator", group: "app" },
   { key: "J", meta: true, label: "Toggle terminal", group: "app" },
   { key: "?", meta: true, label: "Toggle cheat sheet", group: "app" },
 ];

@@ -150,10 +150,4 @@ export interface IpcChannels {
   "session:setClaudeSessionName": (workingDir: string, claudeSessionId: string, name: string) => void;
   "settings:getSoundEnabled": () => Promise<boolean>;
   "settings:setSoundEnabled": (enabled: boolean) => void;
-  "evaluator:start": (sessionCwd: string, baseBranch?: string) => Promise<{ error?: string }>;
-  "evaluator:abort": () => void;
-  "evaluator:data": (chunk: string) => void;
-  "evaluator:done": (error: string | null) => void;
 }
-
-export type EvaluatorStatus = "idle" | "loading" | "streaming" | "done" | "error";

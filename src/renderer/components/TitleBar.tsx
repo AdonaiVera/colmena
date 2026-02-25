@@ -5,11 +5,9 @@ interface TitleBarProps {
   active: Session | undefined;
   splitOpen: boolean;
   diffPanelOpen: boolean;
-  evaluatorPanelOpen: boolean;
   showDiffButton: boolean;
   onToggleSplit: () => void;
   onToggleDiff: () => void;
-  onToggleEvaluator: () => void;
 }
 
 const btnStyle = (on: boolean): React.CSSProperties => ({
@@ -27,11 +25,9 @@ export function TitleBar({
   active,
   splitOpen,
   diffPanelOpen,
-  evaluatorPanelOpen,
   showDiffButton,
   onToggleSplit,
   onToggleDiff,
-  onToggleEvaluator,
 }: TitleBarProps) {
   return (
     <div
@@ -66,15 +62,6 @@ export function TitleBar({
       {showDiffButton && (
         <button className="titlebar-no-drag" onClick={onToggleDiff} style={btnStyle(diffPanelOpen)}>
           Diff
-        </button>
-      )}
-      {active && (
-        <button
-          className="titlebar-no-drag"
-          onClick={onToggleEvaluator}
-          style={btnStyle(evaluatorPanelOpen)}
-        >
-          Evaluate
         </button>
       )}
     </div>

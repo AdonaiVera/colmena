@@ -34,7 +34,6 @@ I created Colmena because I was looking for something open-source that I could m
 - **Session modes** — start fresh, continue last conversation, or pick one to resume
 - **Model selection** — choose between Sonnet, Opus, or Haiku per tab
 - **Git diff panel** — view changes against the default branch in any session mode
-- **Evaluator agent** — one-click session evaluation with score, feedback, and send-to-agent action (Cmd+E)
 - **Split terminal** — open a shell below any session for manual git commands (Cmd+J)
 - **Persistent tabs** — sessions restore when you relaunch
 - **Smart restart** — exited sessions restart on keypress; failed modes fall back to new
@@ -42,16 +41,6 @@ I created Colmena because I was looking for something open-source that I could m
 - **Activity indicators** — colored dots show when Claude is running, idle, or needs input
 - **Sound notifications** — bee buzz alert when Claude needs attention in a background tab
 
-### Pollen Test (Evals)
-
-Measure how much your tools, MCP servers, hooks, and slash commands improve Claude Code. Pollen Test runs a 4-step evaluation pipeline directly inside Colmena:
-
-1. **Analysis** — discovers hooks, MCP servers, skills, and slash commands in your workspace
-2. **Generation** — creates test scenarios per component (direct, paraphrased, edge case, negative)
-3. **Execution** — runs each scenario twice: with tools enabled and without (baseline)
-4. **Report** — scores runs with an LLM judge, computes trigger rate, accuracy, tool lift, and per-component metrics
-
-Each execution spawns real `claude -p` sessions with a simulated user persona that drives multi-turn conversations. Results include token usage, cost breakdowns, and exportable reports (JSON / Markdown).
 
 ## Quick Start
 
