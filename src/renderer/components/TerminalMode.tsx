@@ -75,6 +75,26 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
     [createSession],
   );
 
+  const handleRenameSession = useCallback(
+    (sessionId: string, name: string) => {
+      renameSession(sessionId, name);
+      const session = sessions.find((s) => s.id === sessionId);
+      if (!session) return;
+      if (session.status === "exited") {
+        if (session.claudeSessionId) {
+          window.colmena.session.setClaudeSessionName(
+            session.workingDir,
+            session.claudeSessionId,
+            name,
+          );
+        }
+      } else if (session.activityState !== "running") {
+        window.colmena.pty.write(sessionId, `/rename ${name}\r`);
+      }
+    },
+    [sessions, renameSession],
+  );
+
   const handleRequestClose = useCallback((sessionId: string) => {
     setClosingSessionId(sessionId);
   }, []);
@@ -129,7 +149,7 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
         onSelectSession={setActiveSession}
         onNewSession={() => setShowNewDialog(true)}
         onCloseSession={handleRequestClose}
-        onRenameSession={renameSession}
+        onRenameSession={handleRenameSession}
         showCheatSheet={showCheatSheet}
         onToggleCheatSheet={toggleCheatSheet}
         soundEnabled={soundEnabled}

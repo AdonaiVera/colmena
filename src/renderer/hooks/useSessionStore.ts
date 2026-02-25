@@ -35,6 +35,8 @@ function toPersistedTabs(sessions: Session[]): PersistedTab[] {
     baseBranch: s.baseBranch,
     repoRoot: s.repoRoot,
     isExistingBranch: s.isExistingBranch,
+    claudeSessionId: s.claudeSessionId,
+    userSetName: s.userSetName,
   }));
 }
 
@@ -71,13 +73,39 @@ export function useSessionStore() {
         repoRoot: tab.repoRoot,
         isExistingBranch: tab.isExistingBranch,
         createdAt: Date.now(),
+        claudeSessionId: tab.claudeSessionId,
+        userSetName: tab.userSetName,
       }));
-      setState({
-        sessions,
-        activeSessionId: sessions[0].id,
-        restored: true,
-      });
+      setState({ sessions, activeSessionId: sessions[0].id, restored: true });
+
+      for (const tab of tabs) {
+        if (tab.claudeSessionId && !tab.userSetName) {
+          window.colmena.session
+            .getClaudeSessionName(tab.workingDir, tab.claudeSessionId)
+            .then((name) => {
+              if (!name) return;
+              setState((prev) => ({
+                ...prev,
+                sessions: prev.sessions.map((s) =>
+                  s.id === tab.id ? { ...s, name } : s,
+                ),
+              }));
+            });
+        }
+      }
     });
+  }, []);
+
+  useEffect(() => {
+    const off = window.colmena.session.onSyncName((colmenaId, claudeSessionId, name) => {
+      setState((prev) => ({
+        ...prev,
+        sessions: prev.sessions.map((s) =>
+          s.id === colmenaId && !s.userSetName ? { ...s, name, claudeSessionId } : s,
+        ),
+      }));
+    });
+    return () => { off(); };
   }, []);
 
   const createSession = useCallback(
@@ -158,7 +186,9 @@ export function useSessionStore() {
   const renameSession = useCallback((sessionId: string, name: string) => {
     setState((prev) => ({
       ...prev,
-      sessions: prev.sessions.map((s) => (s.id === sessionId ? { ...s, name } : s)),
+      sessions: prev.sessions.map((s) =>
+        s.id === sessionId ? { ...s, name, userSetName: true } : s,
+      ),
     }));
   }, []);
 

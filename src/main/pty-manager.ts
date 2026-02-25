@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 
 import type { PtyCreateOptions, ActivityState } from "../shared/types";
+import { linkClaudeSession, unlinkClaudeSession } from "./claude-sessions";
 
 interface PtySession {
   process: pty.IPty;
@@ -125,6 +126,8 @@ export function createSession(window: BrowserWindow, opts: PtyCreateOptions): vo
     lastStatus: "",
   };
 
+  linkClaudeSession(window, opts.sessionId, cwd);
+
   ptyProcess.onData((data) => {
     if (!window.isDestroyed()) {
       window.webContents.send("pty:data", opts.sessionId, data);
@@ -133,16 +136,18 @@ export function createSession(window: BrowserWindow, opts: PtyCreateOptions): vo
 
   session.pollInterval = setInterval(() => {
     const status = readSessionStatus(opts.sessionId);
-    if (status === session.lastStatus || !status) return;
-    session.lastStatus = status;
-    const activity = mapStatusToActivity(status);
-    if (activity && !window.isDestroyed()) {
-      window.webContents.send("pty:activity", opts.sessionId, activity);
+    if (status !== session.lastStatus && status) {
+      session.lastStatus = status;
+      const activity = mapStatusToActivity(status);
+      if (activity && !window.isDestroyed()) {
+        window.webContents.send("pty:activity", opts.sessionId, activity);
+      }
     }
   }, POLL_INTERVAL_MS);
 
   ptyProcess.onExit(({ exitCode }) => {
     clearInterval(session.pollInterval);
+    unlinkClaudeSession(opts.sessionId);
     cleanupSessionDir(opts.sessionId);
     if (!window.isDestroyed()) {
       window.webContents.send("pty:exit", opts.sessionId, exitCode);
@@ -171,6 +176,7 @@ export function destroySession(sessionId: string): void {
   const session = sessions.get(sessionId);
   if (session) {
     clearInterval(session.pollInterval);
+    unlinkClaudeSession(sessionId);
     cleanupSessionDir(sessionId);
     session.process.kill();
     sessions.delete(sessionId);
