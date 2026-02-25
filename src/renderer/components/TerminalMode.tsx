@@ -33,7 +33,6 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [diffPanelOpen, setDiffPanelOpen] = useState(false);
-  const [evaluatorPanelOpen, setEvaluatorPanelOpen] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(false);
   const [closingSessionId, setClosingSessionId] = useState<string | null>(null);
   const split = useSplitTerminal();
@@ -46,7 +45,6 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
 
   const toggleCheatSheet = useCallback(() => setShowCheatSheet((prev) => !prev), []);
   const toggleDiffPanel = useCallback(() => setDiffPanelOpen((prev) => !prev), []);
-  const toggleEvaluatorPanel = useCallback(() => setEvaluatorPanelOpen((prev) => !prev), []);
 
   const handleConfirmNewSession = useCallback(
     async (config: {
@@ -122,13 +120,11 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
     onCloseTab: handleRequestClose,
     onToggleCheatSheet: toggleCheatSheet,
     onToggleDiffPanel: toggleDiffPanel,
-    onToggleEvaluatorPanel: toggleEvaluatorPanel,
     onToggleSplitTerminal: split.toggle,
   });
 
   const active = sessions.find((s) => s.id === activeSessionId);
   const diffPath = active?.worktreePath || (active?.baseBranch ? active?.workingDir : undefined);
-  const evaluatorSessionCwd = active?.worktreePath || active?.workingDir;
   const closingSession = closingSessionId
     ? sessions.find((s) => s.id === closingSessionId)
     : undefined;
@@ -169,11 +165,9 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
           active={active}
           splitOpen={split.isOpen}
           diffPanelOpen={diffPanelOpen}
-          evaluatorPanelOpen={evaluatorPanelOpen}
           showDiffButton={!!(diffPath && active?.baseBranch)}
           onToggleSplit={split.toggle}
           onToggleDiff={toggleDiffPanel}
-          onToggleEvaluator={toggleEvaluatorPanel}
         />
 
         <TerminalArea
@@ -185,10 +179,6 @@ export function TerminalMode({ onBack }: TerminalModeProps) {
           activeBranch={active?.baseBranch}
           activeSessionName={active?.name}
           onCloseDiffPanel={() => setDiffPanelOpen(false)}
-          evaluatorPanelOpen={evaluatorPanelOpen}
-          evaluatorSessionCwd={evaluatorSessionCwd}
-          evaluatorBaseBranch={active?.baseBranch}
-          onCloseEvaluatorPanel={() => setEvaluatorPanelOpen(false)}
           onStatusChange={handleStatusChange}
           onNewTab={() => setShowNewDialog(true)}
           splitOpen={split.isOpen}

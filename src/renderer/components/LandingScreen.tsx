@@ -4,7 +4,6 @@ import { ColmenaLogo } from "./ColmenaLogo";
 
 interface LandingScreenProps {
   onSelectTerminal: () => void;
-  onSelectEvals: () => void;
 }
 
 const cardBase: React.CSSProperties = {
@@ -33,26 +32,6 @@ const descStyle: React.CSSProperties = {
   textAlign: "center",
   lineHeight: 1.5,
 };
-
-function PollenIcon({ size = 48 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="32" cy="32" r="6" fill="var(--accent)" opacity="0.9" />
-      <ellipse cx="32" cy="18" rx="5" ry="8" fill="var(--accent)" opacity="0.5" />
-      <ellipse cx="32" cy="46" rx="5" ry="8" fill="var(--accent)" opacity="0.5" />
-      <ellipse cx="18" cy="25" rx="5" ry="8" fill="var(--accent)" opacity="0.4" transform="rotate(60 18 25)" />
-      <ellipse cx="46" cy="39" rx="5" ry="8" fill="var(--accent)" opacity="0.4" transform="rotate(60 46 39)" />
-      <ellipse cx="18" cy="39" rx="5" ry="8" fill="var(--accent)" opacity="0.35" transform="rotate(-60 18 39)" />
-      <ellipse cx="46" cy="25" rx="5" ry="8" fill="var(--accent)" opacity="0.35" transform="rotate(-60 46 25)" />
-    </svg>
-  );
-}
 
 function ModeCard({
   icon,
@@ -85,7 +64,7 @@ function ModeCard({
   );
 }
 
-export function LandingScreen({ onSelectTerminal, onSelectEvals }: LandingScreenProps) {
+export function LandingScreen({ onSelectTerminal }: LandingScreenProps) {
   return (
     <div
       style={{
@@ -104,22 +83,14 @@ export function LandingScreen({ onSelectTerminal, onSelectEvals }: LandingScreen
         Colmena
       </div>
       <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 32 }}>
-        Choose your workspace
+        Multi-agent Claude Code terminal
       </div>
-      <div style={{ display: "flex", gap: 24 }}>
-        <ModeCard
-          icon={<ColmenaLogo size={48} />}
-          title="Multi-Session Terminal"
-          description="Run multiple Claude Code sessions in parallel with git worktrees"
-          onClick={onSelectTerminal}
-        />
-        <ModeCard
-          icon={<PollenIcon />}
-          title="Pollen Test"
-          description="Evaluate how tools, MCP servers, and hooks improve Claude Code"
-          onClick={onSelectEvals}
-        />
-      </div>
+      <ModeCard
+        icon={<ColmenaLogo size={48} />}
+        title="Multi-Session Terminal"
+        description="Run multiple Claude Code sessions in parallel with git worktrees"
+        onClick={onSelectTerminal}
+      />
     </div>
   );
 }

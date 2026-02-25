@@ -26,5 +26,4 @@ export const TERMINAL_THEME = {
   brightWhite: "#fafafa",
 };
 
-export const ACTIVITY_POLL_INTERVAL = 500;
 export const GIT_BRANCH_POLL_INTERVAL = 5000;
