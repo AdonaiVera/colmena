@@ -1,12 +1,12 @@
 import { ipcMain, dialog, type BrowserWindow } from "electron";
 
 import { createSession, writeToSession, resizeSession, destroySession } from "./pty-manager";
-import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled } from "./store";
+import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled, loadGroups, saveGroups } from "./store";
 import { setupWorktree, getCurrentBranch, getGitInfo, listBranches } from "./git-manager";
 import { cleanupWorktree } from "./git-cleanup";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import { readCustomTitle, writeCustomTitle } from "./claude-sessions";
-import type { PtyCreateOptions, PersistedTab } from "../shared/types";
+import type { PtyCreateOptions, PersistedTab, Group } from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
   ipcMain.on("pty:create", (_event, opts: PtyCreateOptions) => {
@@ -53,6 +53,14 @@ export function registerIpcHandlers(window: BrowserWindow): void {
 
   ipcMain.on("settings:setSoundEnabled", (_event, enabled: boolean) => {
     setSoundEnabled(enabled);
+  });
+
+  ipcMain.handle("groups:load", () => {
+    return loadGroups();
+  });
+
+  ipcMain.on("groups:save", (_event, groups: Group[]) => {
+    saveGroups(groups);
   });
 
   ipcMain.handle("dialog:openFolder", async () => {

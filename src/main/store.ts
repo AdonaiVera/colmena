@@ -1,10 +1,12 @@
 import Store from "electron-store";
 
-import type { PersistedTab } from "../shared/types";
+import type { PersistedTab, Group } from "../shared/types";
+import { DEFAULT_GROUPS } from "../shared/types";
 
 interface StoreSchema {
   tabs: PersistedTab[];
   soundEnabled: boolean;
+  groups: Group[];
 }
 
 const store = new Store<StoreSchema>({
@@ -12,6 +14,7 @@ const store = new Store<StoreSchema>({
   defaults: {
     tabs: [],
     soundEnabled: true,
+    groups: DEFAULT_GROUPS,
   },
 });
 
@@ -29,4 +32,12 @@ export function getSoundEnabled(): boolean {
 
 export function setSoundEnabled(enabled: boolean): void {
   store.set("soundEnabled", enabled);
+}
+
+export function loadGroups(): Group[] {
+  return store.get("groups", DEFAULT_GROUPS);
+}
+
+export function saveGroups(groups: Group[]): void {
+  store.set("groups", groups);
 }

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, watch, readdirSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, watch, readdirSync } from "fs";
 import { join } from "path";
 import os from "os";
 import type { BrowserWindow } from "electron";
@@ -60,8 +60,6 @@ export function linkClaudeSession(
   workingDir: string,
 ): void {
   const projectDir = getProjectDir(workingDir);
-  if (!existsSync(projectDir)) return;
-
   const seen = new Map<string, string>();
 
   const check = (filename?: string | null) => {
@@ -88,11 +86,31 @@ export function linkClaudeSession(
     }
   };
 
-  check(null);
+  const startProjectWatcher = () => {
+    check(null);
+    const watcher = watch(projectDir, (_event, filename) => check(filename));
+    watcher.on("error", () => {});
+    watchers.set(colmenaId, () => watcher.close());
+  };
 
-  const watcher = watch(projectDir, (_event, filename) => check(filename));
-  watcher.on("error", () => {});
-  watchers.set(colmenaId, () => watcher.close());
+  if (existsSync(projectDir)) {
+    startProjectWatcher();
+    return;
+  }
+
+  const projectsDir = join(os.homedir(), ".claude", "projects");
+  if (!existsSync(projectsDir)) {
+    mkdirSync(projectsDir, { recursive: true });
+  }
+
+  const parentWatcher = watch(projectsDir, () => {
+    if (existsSync(projectDir)) {
+      parentWatcher.close();
+      startProjectWatcher();
+    }
+  });
+  parentWatcher.on("error", () => {});
+  watchers.set(colmenaId, () => parentWatcher.close());
 }
 
 export function unlinkClaudeSession(colmenaId: string): void {

@@ -10,6 +10,11 @@ interface SessionItemProps {
   onSelect: () => void;
   onClose: () => void;
   onRename: (name: string) => void;
+  isDragged?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (before: boolean) => void;
+  onDrop?: (before: boolean) => void;
+  onDragEnd?: () => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -36,6 +41,11 @@ export function SessionItem({
   onSelect,
   onClose,
   onRename,
+  isDragged,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }: SessionItemProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -53,17 +63,31 @@ export function SessionItem({
     setEditing(false);
   }, [editValue, onRename]);
 
+  const getBefore = (e: React.DragEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return e.clientY < rect.top + rect.height / 2;
+  };
+
   return (
     <div
+      draggable={!editing}
       onClick={onSelect}
       onDoubleClick={() => {
         setEditing(true);
         setEditValue(session.name || `Tab ${index + 1}`);
       }}
+      onDragStart={(e) => {
+        if (editing) { e.preventDefault(); return; }
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart?.();
+      }}
+      onDragOver={(e) => { e.preventDefault(); onDragOver?.(getBefore(e)); }}
+      onDrop={(e) => { e.preventDefault(); onDrop?.(getBefore(e)); }}
+      onDragEnd={() => onDragEnd?.()}
       style={{
         padding: "8px 12px",
         borderRadius: "var(--radius)",
-        cursor: "pointer",
+        cursor: editing ? "default" : "grab",
         backgroundColor: isActive ? "var(--surface-hover)" : "transparent",
         border: isActive ? "1px solid var(--border)" : "1px solid transparent",
         marginBottom: 2,
@@ -71,6 +95,7 @@ export function SessionItem({
         alignItems: "center",
         justifyContent: "space-between",
         transition: "var(--transition)",
+        opacity: isDragged ? 0.35 : 1,
       }}
       onMouseEnter={(e) => {
         if (!isActive) e.currentTarget.style.backgroundColor = "var(--surface-hover)";
@@ -79,15 +104,7 @@ export function SessionItem({
         if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          minWidth: 0,
-          flex: 1,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1 }}>
         <div
           style={{
             width: 6,
@@ -102,7 +119,9 @@ export function SessionItem({
             <input
               ref={inputRef}
               value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
+              onChange={(e) =>
+                setEditValue(e.target.value.replace(/[\x00-\x1F\x7F]/g, "").slice(0, 60))
+              }
               onBlur={commitRename}
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitRename();
@@ -136,13 +155,7 @@ export function SessionItem({
               >
                 {session.name || `Tab ${index + 1}`}
               </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "var(--text-muted)",
-                  marginTop: 2,
-                }}
-              >
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
                 {sessionSubtitle(session)}
               </div>
             </>
@@ -152,10 +165,7 @@ export function SessionItem({
 
       {!editing && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           style={{
             background: "none",
             border: "none",

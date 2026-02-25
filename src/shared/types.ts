@@ -35,6 +35,7 @@ export function buildClaudeCommand(mode: ClaudeMode, model: ClaudeModel): string
 export interface Session {
   id: string;
   name: string;
+  group?: string;
   workingDir: string;
   command: string;
   mode: ClaudeMode;
@@ -54,6 +55,7 @@ export interface Session {
 export interface PersistedTab {
   id: string;
   name: string;
+  group?: string;
   workingDir: string;
   command: string;
   mode: ClaudeMode;
@@ -109,6 +111,18 @@ export interface GitDiffFile {
   modifiedContent: string;
 }
 
+export interface Group {
+  id: string;
+  label: string;
+}
+
+export const DEFAULT_GROUPS: Group[] = [
+  { id: "focus", label: "Focus" },
+  { id: "sleep", label: "Sleep" },
+  { id: "research", label: "Research" },
+  { id: "archive", label: "Archive" },
+];
+
 export interface IpcChannels {
   "pty:create": (opts: PtyCreateOptions) => void;
   "pty:write": (sessionId: string, data: string) => void;
@@ -150,4 +164,6 @@ export interface IpcChannels {
   "session:setClaudeSessionName": (workingDir: string, claudeSessionId: string, name: string) => void;
   "settings:getSoundEnabled": () => Promise<boolean>;
   "settings:setSoundEnabled": (enabled: boolean) => void;
+  "groups:load": () => Promise<Group[]>;
+  "groups:save": (groups: Group[]) => void;
 }

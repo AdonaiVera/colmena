@@ -1,8 +1,10 @@
-import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Settings } from "lucide-react";
 
-import type { Session } from "../../shared/types";
+import type { Group, Session } from "../../shared/types";
 import { ColmenaLogo } from "./ColmenaLogo";
-import { SessionItem } from "./SessionItem";
+import { GroupSection } from "./GroupSection";
+import type { DropTarget } from "./GroupSection";
 import { CheatSheet } from "./CheatSheet";
 import { MOD_KEY } from "../lib/shortcuts";
 
@@ -13,11 +15,11 @@ interface SidebarProps {
   onNewSession: () => void;
   onCloseSession: (id: string) => void;
   onRenameSession: (id: string, name: string) => void;
+  onMoveSession: (sessionId: string, targetId: string | null, position: "before" | "after", group: string) => void;
   showCheatSheet: boolean;
   onToggleCheatSheet: () => void;
-  soundEnabled: boolean;
-  onToggleSound: () => void;
-  onBack?: () => void;
+  groups: Group[];
+  onManageGroups: () => void;
 }
 
 const footerBtn: React.CSSProperties = {
@@ -42,12 +44,38 @@ export function Sidebar({
   onNewSession,
   onCloseSession,
   onRenameSession,
+  onMoveSession,
   showCheatSheet,
   onToggleCheatSheet,
-  soundEnabled,
-  onToggleSound,
-  onBack,
+  groups,
+  onManageGroups,
 }: SidebarProps) {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
+
+  const handleDragStart = useCallback((sessionId: string) => setDraggedId(sessionId), []);
+  const handleDragOver = useCallback((target: DropTarget) => setDropTarget(target), []);
+  const handleDragEnd = useCallback(() => {
+    setDraggedId(null);
+    setDropTarget(null);
+  }, []);
+
+  const handleDrop = useCallback(
+    (targetId: string | null, before: boolean, groupId: string) => {
+      if (!draggedId) return;
+      onMoveSession(draggedId, targetId, before ? "before" : "after", groupId);
+      setDraggedId(null);
+      setDropTarget(null);
+    },
+    [draggedId, onMoveSession],
+  );
+
+  const toggleGroup = useCallback(
+    (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] })),
+    [],
+  );
+
   return (
     <div
       style={{
@@ -95,59 +123,29 @@ export function Sidebar({
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-        {sessions.map((session, index) => (
-          <SessionItem
-            key={session.id}
-            session={session}
-            index={index}
-            isActive={session.id === activeSessionId}
-            onSelect={() => onSelectSession(session.id)}
-            onClose={() => onCloseSession(session.id)}
-            onRename={(name) => onRenameSession(session.id, name)}
+        {groups.map((group) => (
+          <GroupSection
+            key={group.id}
+            id={group.id}
+            label={group.label}
+            sessions={sessions.filter((s) => (s.group ?? "focus") === group.id)}
+            collapsed={!!collapsed[group.id]}
+            activeSessionId={activeSessionId}
+            onToggle={() => toggleGroup(group.id)}
+            onSelectSession={onSelectSession}
+            onCloseSession={onCloseSession}
+            onRenameSession={onRenameSession}
+            draggedId={draggedId}
+            dropTarget={dropTarget}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
           />
         ))}
-
-        {sessions.length === 0 && (
-          <div
-            style={{
-              padding: "24px 12px",
-              textAlign: "center",
-              color: "var(--text-muted)",
-              fontSize: 12,
-            }}
-          >
-            No tabs yet.
-            <br />
-            Click + New to start.
-          </div>
-        )}
       </div>
 
-      <div
-        style={{
-          padding: "8px 12px",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
-        <button
-          className="titlebar-no-drag"
-          onClick={onToggleSound}
-          style={{ ...footerBtn, color: soundEnabled ? "var(--accent)" : "var(--text-muted)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
-          <span>Sound</span>
-          <span
-            style={{
-              marginLeft: "auto",
-              fontSize: 10,
-              opacity: 0.6,
-            }}
-          >
-            {soundEnabled ? "On" : "Off"}
-          </span>
-        </button>
+      <div style={{ padding: "8px 12px", borderTop: "1px solid var(--border)" }}>
         <button
           className="titlebar-no-drag"
           onClick={onToggleCheatSheet}
@@ -157,33 +155,22 @@ export function Sidebar({
         >
           <span style={{ fontSize: 14 }}>?</span>
           <span>Shortcuts</span>
-          <span
-            style={{
-              marginLeft: "auto",
-              fontSize: 10,
-              opacity: 0.6,
-              fontFamily: "var(--font-mono)",
-            }}
-          >
+          <span style={{ marginLeft: "auto", fontSize: 10, opacity: 0.6, fontFamily: "var(--font-mono)" }}>
             {MOD_KEY}+?
           </span>
         </button>
+        <button
+          className="titlebar-no-drag"
+          onClick={onManageGroups}
+          style={footerBtn}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+        >
+          <Settings size={14} />
+          <span>Settings</span>
+        </button>
       </div>
 
-      {onBack && (
-        <div style={{ padding: "0 12px 8px", borderTop: "1px solid var(--border)" }}>
-          <button
-            className="titlebar-no-drag"
-            onClick={onBack}
-            style={footerBtn}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Landing</span>
-          </button>
-        </div>
-      )}
       <CheatSheet open={showCheatSheet} onClose={onToggleCheatSheet} />
     </div>
   );
