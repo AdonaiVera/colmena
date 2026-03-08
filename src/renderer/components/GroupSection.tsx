@@ -76,8 +76,14 @@ export function GroupSection({
     <div style={{ marginBottom: 2 }}>
       <div
         onClick={onToggle}
-        onDragOver={(e) => { e.preventDefault(); onDragOver({ groupId: id }); }}
-        onDrop={(e) => { e.preventDefault(); onDrop(null, false, id); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          onDragOver({ groupId: id });
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          onDrop(null, false, id);
+        }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -95,8 +101,12 @@ export function GroupSection({
           userSelect: "none",
           border: isGroupDrop ? "1px dashed var(--accent)" : "1px solid transparent",
         }}
-        onMouseEnter={(e) => { if (!isGroupDrop) e.currentTarget.style.color = "var(--text-secondary)"; }}
-        onMouseLeave={(e) => { if (!isGroupDrop) e.currentTarget.style.color = "var(--text-muted)"; }}
+        onMouseEnter={(e) => {
+          if (!isGroupDrop) e.currentTarget.style.color = "var(--text-secondary)";
+        }}
+        onMouseLeave={(e) => {
+          if (!isGroupDrop) e.currentTarget.style.color = "var(--text-muted)";
+        }}
       >
         {collapsed ? <ChevronRight size={10} /> : <ChevronDown size={10} />}
         <span style={{ flex: 1 }}>{label}</span>
@@ -127,8 +137,14 @@ export function GroupSection({
 
           {sessions.length === 0 && (
             <div
-              onDragOver={(e) => { e.preventDefault(); onDragOver({ groupId: id }); }}
-              onDrop={(e) => { e.preventDefault(); onDrop(null, false, id); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                onDragOver({ groupId: id });
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                onDrop(null, false, id);
+              }}
               style={{
                 padding: "6px 12px",
                 color: "var(--text-muted)",

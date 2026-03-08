@@ -123,6 +123,34 @@ export const DEFAULT_GROUPS: Group[] = [
   { id: "archive", label: "Archive" },
 ];
 
+export type HookEvent =
+  | "PreToolUse"
+  | "PostToolUse"
+  | "Stop"
+  | "UserPromptSubmit"
+  | "Notification"
+  | "PermissionRequest"
+  | "SubagentStop"
+  | "SubagentToolUse";
+
+export type HooksScope = "user" | "project";
+
+export interface ClaudeHookCommand {
+  type: string;
+  command: string;
+}
+
+export interface ClaudeHookRule {
+  matcher: string;
+  hooks: ClaudeHookCommand[];
+}
+
+export interface ClaudeSettingsData {
+  presets: Record<string, boolean>;
+  denyRules: string[];
+  customHooks: Record<string, ClaudeHookRule[]>;
+}
+
 export interface IpcChannels {
   "pty:create": (opts: PtyCreateOptions) => void;
   "pty:write": (sessionId: string, data: string) => void;
@@ -160,10 +188,23 @@ export interface IpcChannels {
   ) => Promise<boolean>;
   "git:writeFile": (worktreePath: string, filePath: string, content: string) => Promise<boolean>;
   "session:syncName": (colmenaId: string, claudeSessionId: string, name: string) => void;
-  "session:getClaudeSessionName": (workingDir: string, claudeSessionId: string) => Promise<string | null>;
-  "session:setClaudeSessionName": (workingDir: string, claudeSessionId: string, name: string) => void;
+  "session:getClaudeSessionName": (
+    workingDir: string,
+    claudeSessionId: string,
+  ) => Promise<string | null>;
+  "session:setClaudeSessionName": (
+    workingDir: string,
+    claudeSessionId: string,
+    name: string,
+  ) => void;
   "settings:getSoundEnabled": () => Promise<boolean>;
   "settings:setSoundEnabled": (enabled: boolean) => void;
   "groups:load": () => Promise<Group[]>;
   "groups:save": (groups: Group[]) => void;
+  "claude-settings:load": (scope: HooksScope, projectDir?: string) => Promise<ClaudeSettingsData>;
+  "claude-settings:save": (
+    data: ClaudeSettingsData,
+    scope: HooksScope,
+    projectDir?: string,
+  ) => void;
 }

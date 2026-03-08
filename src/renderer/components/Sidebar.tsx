@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, Shield } from "lucide-react";
 
 import type { Group, Session } from "../../shared/types";
 import { ColmenaLogo } from "./ColmenaLogo";
@@ -25,6 +25,7 @@ interface SidebarProps {
   onToggleCheatSheet: () => void;
   groups: Group[];
   onManageGroups: () => void;
+  onManageHooks: () => void;
 }
 
 const footerBtn: React.CSSProperties = {
@@ -54,6 +55,7 @@ export function Sidebar({
   onToggleCheatSheet,
   groups,
   onManageGroups,
+  onManageHooks,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -196,6 +198,16 @@ export function Sidebar({
           >
             {MOD_KEY}+?
           </span>
+        </button>
+        <button
+          className="titlebar-no-drag"
+          onClick={onManageHooks}
+          style={footerBtn}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+        >
+          <Shield size={14} />
+          <span>Hooks & Rules</span>
         </button>
         <button
           className="titlebar-no-drag"

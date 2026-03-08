@@ -41,6 +41,16 @@ I created Colmena because I was looking for something open-source that I could m
 - **Activity indicators** — colored dots show when Claude is running, idle, or needs input
 - **Sound notifications** — bee buzz alert when Claude needs attention in a background tab
 
+### Hooks & Rules
+
+- **Deny rules** — block specific tool patterns from being used (e.g. `Bash(git push*)`, `Read(./.env*)`)
+- **Hook presets** — one-click toggles for common safety and quality hooks:
+  - _Safety_: block push to main/master, block force push, block `rm -rf`, protect `.env` files
+  - _Quality_: auto-format on write, lint after write, review staged changes before commit
+  - _Notifications_: macOS notification when Claude finishes
+- **Custom hooks** — add arbitrary hooks for any Claude Code event (`PreToolUse`, `PostToolUse`, `Stop`, and more)
+- **Scope toggle** — apply hooks at user level (`~/.claude/settings.json`) or project level (`.claude/settings.json`)
+- **Non-destructive** — Colmena's internal activity-tracking hooks are always preserved
 
 ## Quick Start
 

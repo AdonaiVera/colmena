@@ -8,6 +8,8 @@ import type {
   GitDiffFile,
   ActivityState,
   Group,
+  ClaudeSettingsData,
+  HooksScope,
 } from "../shared/types";
 
 const api = {
@@ -96,10 +98,14 @@ const api = {
     load: (): Promise<Group[]> => ipcRenderer.invoke("groups:load"),
     save: (groups: Group[]) => ipcRenderer.send("groups:save", groups),
   },
+  claudeSettings: {
+    load: (scope: HooksScope, projectDir?: string): Promise<ClaudeSettingsData> =>
+      ipcRenderer.invoke("claude-settings:load", scope, projectDir),
+    save: (data: ClaudeSettingsData, scope: HooksScope, projectDir?: string) =>
+      ipcRenderer.send("claude-settings:save", data, scope, projectDir),
+  },
   session: {
-    onSyncName: (
-      callback: (colmenaId: string, claudeSessionId: string, name: string) => void,
-    ) => {
+    onSyncName: (callback: (colmenaId: string, claudeSessionId: string, name: string) => void) => {
       const handler = (
         _event: Electron.IpcRendererEvent,
         colmenaId: string,
@@ -109,10 +115,7 @@ const api = {
       ipcRenderer.on("session:syncName", handler);
       return () => ipcRenderer.removeListener("session:syncName", handler);
     },
-    getClaudeSessionName: (
-      workingDir: string,
-      claudeSessionId: string,
-    ): Promise<string | null> =>
+    getClaudeSessionName: (workingDir: string, claudeSessionId: string): Promise<string | null> =>
       ipcRenderer.invoke("session:getClaudeSessionName", workingDir, claudeSessionId),
     setClaudeSessionName: (workingDir: string, claudeSessionId: string, name: string): void =>
       ipcRenderer.send("session:setClaudeSessionName", workingDir, claudeSessionId, name),
