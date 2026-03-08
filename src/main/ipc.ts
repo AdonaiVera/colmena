@@ -1,12 +1,26 @@
 import { ipcMain, dialog, type BrowserWindow } from "electron";
 
 import { createSession, writeToSession, resizeSession, destroySession } from "./pty-manager";
-import { saveTabs, loadTabs, getSoundEnabled, setSoundEnabled, loadGroups, saveGroups } from "./store";
+import {
+  saveTabs,
+  loadTabs,
+  getSoundEnabled,
+  setSoundEnabled,
+  loadGroups,
+  saveGroups,
+} from "./store";
 import { setupWorktree, getCurrentBranch, getGitInfo, listBranches } from "./git-manager";
 import { cleanupWorktree } from "./git-cleanup";
 import { getDiffFiles, revertFile, revertHunk, writeFileContent } from "./git-diff";
 import { readCustomTitle, writeCustomTitle } from "./claude-sessions";
-import type { PtyCreateOptions, PersistedTab, Group } from "../shared/types";
+import { loadClaudeSettings, saveClaudeSettings } from "./claude-settings";
+import type {
+  PtyCreateOptions,
+  PersistedTab,
+  Group,
+  ClaudeSettingsData,
+  HooksScope,
+} from "../shared/types";
 
 export function registerIpcHandlers(window: BrowserWindow): void {
   ipcMain.on("pty:create", (_event, opts: PtyCreateOptions) => {
@@ -62,6 +76,17 @@ export function registerIpcHandlers(window: BrowserWindow): void {
   ipcMain.on("groups:save", (_event, groups: Group[]) => {
     saveGroups(groups);
   });
+
+  ipcMain.handle("claude-settings:load", (_event, scope: HooksScope, projectDir?: string) => {
+    return loadClaudeSettings(scope, projectDir);
+  });
+
+  ipcMain.on(
+    "claude-settings:save",
+    (_event, data: ClaudeSettingsData, scope: HooksScope, projectDir?: string) => {
+      saveClaudeSettings(data, scope, projectDir);
+    },
+  );
 
   ipcMain.handle("dialog:openFolder", async () => {
     const result = await dialog.showOpenDialog(window, {
@@ -135,5 +160,4 @@ export function registerIpcHandlers(window: BrowserWindow): void {
       return writeFileContent(worktreePath, filePath, content);
     },
   );
-
 }

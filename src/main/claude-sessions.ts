@@ -35,11 +35,7 @@ export function readCustomTitle(workingDir: string, claudeSessionId: string): st
   }
 }
 
-export function writeCustomTitle(
-  workingDir: string,
-  claudeSessionId: string,
-  title: string,
-): void {
+export function writeCustomTitle(workingDir: string, claudeSessionId: string, title: string): void {
   const jsonlPath = getJSONLPath(workingDir, claudeSessionId);
   if (!existsSync(jsonlPath)) return;
   try {

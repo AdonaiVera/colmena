@@ -43,7 +43,9 @@ export function SettingsPanel({
   onRemoveGroup,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [pendingDelete, setPendingDelete] = useState<{ groupId: string; targetId: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ groupId: string; targetId: string } | null>(
+    null,
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [newLabel, setNewLabel] = useState("");
@@ -193,7 +195,10 @@ export function SettingsPanel({
 
         if (isPending) {
           return (
-            <div key={g.id} style={{ padding: "6px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+            <div
+              key={g.id}
+              style={{ padding: "6px 16px", display: "flex", flexDirection: "column", gap: 6 }}
+            >
               <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
                 Move {count} session{count !== 1 ? "s" : ""} to:
               </div>
@@ -212,7 +217,9 @@ export function SettingsPanel({
                   }}
                 >
                   {others.map((og) => (
-                    <option key={og.id} value={og.id}>{og.label}</option>
+                    <option key={og.id} value={og.id}>
+                      {og.label}
+                    </option>
                   ))}
                 </select>
                 <button
@@ -251,7 +258,9 @@ export function SettingsPanel({
                 {g.label}
               </span>
             )}
-            <span style={{ fontSize: 11, color: "var(--text-muted)", minWidth: 16, textAlign: "right" }}>
+            <span
+              style={{ fontSize: 11, color: "var(--text-muted)", minWidth: 16, textAlign: "right" }}
+            >
               {count}
             </span>
             <button
@@ -279,7 +288,9 @@ export function SettingsPanel({
           placeholder="New group name"
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") handleAddGroup(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleAddGroup();
+          }}
           style={{ ...inputStyle }}
         />
         <button

@@ -14,6 +14,7 @@ import { NewSessionDialog } from "./NewSessionDialog";
 import { CloseSessionDialog } from "./CloseSessionDialog";
 import { SettingsPanel } from "./SettingsPanel";
 import { TerminalArea } from "./TerminalArea";
+import { HooksDialog } from "./HooksDialog";
 import type { ClaudeMode, ClaudeModel } from "../../shared/types";
 
 export function TerminalMode() {
@@ -35,6 +36,7 @@ export function TerminalMode() {
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHooksDialog, setShowHooksDialog] = useState(false);
   const [diffPanelOpen, setDiffPanelOpen] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(false);
   const [closingSessionId, setClosingSessionId] = useState<string | null>(null);
@@ -171,6 +173,7 @@ export function TerminalMode() {
         onToggleCheatSheet={toggleCheatSheet}
         groups={groups}
         onManageGroups={() => setShowSettings(true)}
+        onManageHooks={() => setShowHooksDialog(true)}
       />
 
       <div
@@ -221,6 +224,12 @@ export function TerminalMode() {
         sessionName={closingSession?.name || "Session"}
         onConfirm={handleConfirmClose}
         onCancel={() => setClosingSessionId(null)}
+      />
+
+      <HooksDialog
+        open={showHooksDialog}
+        onClose={() => setShowHooksDialog(false)}
+        projectDir={active?.workingDir}
       />
 
       <SettingsPanel

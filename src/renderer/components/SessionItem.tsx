@@ -77,12 +77,21 @@ export function SessionItem({
         setEditValue(session.name || `Tab ${index + 1}`);
       }}
       onDragStart={(e) => {
-        if (editing) { e.preventDefault(); return; }
+        if (editing) {
+          e.preventDefault();
+          return;
+        }
         e.dataTransfer.effectAllowed = "move";
         onDragStart?.();
       }}
-      onDragOver={(e) => { e.preventDefault(); onDragOver?.(getBefore(e)); }}
-      onDrop={(e) => { e.preventDefault(); onDrop?.(getBefore(e)); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver?.(getBefore(e));
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop?.(getBefore(e));
+      }}
       onDragEnd={() => onDragEnd?.()}
       style={{
         padding: "8px 12px",
@@ -165,7 +174,10 @@ export function SessionItem({
 
       {!editing && (
         <button
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           style={{
             background: "none",
             border: "none",
